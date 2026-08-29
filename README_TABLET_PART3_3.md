@@ -1,0 +1,1 @@
+Part 3-3: Fire Risk simulation in all 3 districts, DEM relief/hillshade base maps, and improved Water affected-area outline. Fire follows the PC rules 1=-1, 6=0, 8=0, 9=+1, 14=+1 and reverse-D8 upstream tracing for 30 steps.

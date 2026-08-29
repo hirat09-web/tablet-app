@@ -1,0 +1,2376 @@
+```
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CEFORAA Forestal">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    
+<link
+rel="stylesheet"
+href="leaflet.css"
+/>
+
+<script src="leaflet.js"></script>
+
+<style>
+
+html,
+body {
+
+  margin:0;
+  padding:0;
+  height:100%;
+
+}
+
+#map {
+
+  width:100%;
+  height:100vh;
+
+}
+
+/* ================= UI ================= */
+
+.control-box {
+
+  position:absolute;
+
+  top:10px;
+  left:10px;
+
+  z-index:1000;
+
+  background:white;
+
+  padding:10px;
+
+  border-radius:10px;
+
+  box-shadow:0 2px 10px rgba(0,0,0,0.3);
+
+  width:240px;
+
+  font-family:Arial;
+
+  max-height:90vh;
+
+  overflow-y:auto;
+}
+
+button {
+
+  width:100%;
+
+  margin:5px 0;
+
+  padding:10px;
+
+  font-size:16px;
+
+  cursor:pointer;
+}
+
+input[type=range] {
+
+  width:100%;
+}
+
+.year-list {
+
+  border:1px solid #ccc;
+
+  padding:5px;
+
+  max-height:180px;
+
+  overflow-y:auto;
+}
+
+.legend {
+
+  background:white;
+
+  padding:8px;
+
+  line-height:18px;
+
+  border-radius:8px;
+
+  box-shadow:0 0 10px rgba(0,0,0,0.2);
+
+  font-size:13px;
+}
+
+.legend i {
+
+  width:18px;
+
+  height:18px;
+
+  float:left;
+
+  margin-right:8px;
+
+  opacity:0.8;
+}
+
+/* ================= Botón de menú ================= */
+
+#menuToggle{
+
+  position:absolute;
+
+  top:10px;
+  left:10px;
+
+  z-index:1100;
+
+  background:white;
+
+  border:none;
+
+  padding:10px 14px;
+
+  border-radius:8px;
+
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+
+  font-size:16px;
+
+  cursor:pointer;
+
+  display:none;
+
+  width:auto;
+}
+
+
+/* ================= Teléfono inteligente ================= */
+
+@media (max-width:768px){
+
+  #menuToggle{
+
+    display:block;
+
+  }
+
+ .control-box{
+
+    width:160px;
+
+    max-height:85vh;
+
+    left:-180px;
+
+    top:10px;
+
+    transition:left 0.3s ease;
+
+    padding:8px;
+
+    font-size:12px;
+}
+
+  .control-box.open{
+
+    left:10px;
+
+  }
+
+  button{
+
+    font-size:12px;
+
+    padding:6px;
+  }
+
+  .year-list{
+
+    max-height:80px;
+  }
+
+  .legend{
+
+    font-size:11px;
+
+    padding:6px;
+
+    max-height:45vh;
+
+    max-width:120px;
+
+    overflow-y:auto;
+
+  }
+
+  .project-logo{
+
+    width:55px;
+
+    height:55px;
+
+  }
+
+  .logo-title{
+
+     font-size:11px;
+
+  }
+
+  .leaflet-bottom{
+
+   bottom:90px !important;
+
+  }
+}
+
+/* ================= Logo ================= */
+
+.logo-container{
+
+   text-align:center;
+
+   margin-bottom:10px;
+
+}
+
+.project-logo{
+
+   width:80px;
+
+   height:80px;
+
+   object-fit:contain;
+
+}
+
+.logo-title{
+
+   font-size:14px;
+
+   font-weight:bold;
+
+   margin-top:5px;
+
+}
+
+.info-icon{
+
+   cursor:pointer;
+
+   font-size:18px;
+
+   margin-left:5px;
+
+   vertical-align:top;
+
+}
+
+.logo-container{
+
+   cursor:pointer;
+
+}
+
+/* ================= Localidades ================= */
+
+.place-label{
+
+   background:transparent !important;
+
+   border:none !important;
+
+   box-shadow:none !important;
+
+   font-size:12px;
+
+   font-weight:bold;
+
+}
+
+.place-label-dark{
+   color:black !important;
+   text-shadow:
+      -1px -1px 2px white,
+       1px -1px 2px white,
+      -1px  1px 2px white,
+       1px  1px 2px white !important;
+}
+
+.place-label-light{
+   color:white !important;
+   font-size:13px !important;
+   font-weight:bold !important;
+   text-shadow:
+      -1px -1px 2px black,
+       1px -1px 2px black,
+      -1px  1px 2px black,
+       1px  1px 2px black,
+       0px  0px 4px black,
+       0px  0px 6px black !important;
+}
+
+.leaflet-control-layers-toggle{
+
+   background-image:none !important;
+
+   width:60px !important;
+
+   height:30px !important;
+
+   line-height:30px !important;
+
+   text-align:center;
+
+   font-weight:bold;
+
+   font-size:13px;
+
+}
+
+.leaflet-control-layers-toggle:after{
+
+   content:"Mapa";
+
+}
+
+/* Mostrar PNG sin desenfoque */
+.leaflet-image-layer{
+   image-rendering: pixelated;
+   image-rendering: crisp-edges;
+}
+
+
+/* ================= Tablet / PWA shell ================= */
+:root{
+  --app-nav-height:64px;
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+}
+
+#appNav{
+  position:fixed;
+  left:50%;
+  bottom:calc(10px + var(--safe-bottom));
+  transform:translateX(-50%);
+  z-index:2000;
+  display:flex;
+  gap:6px;
+  width:min(680px, calc(100% - 24px));
+  padding:6px;
+  background:rgba(255,255,255,0.96);
+  border-radius:14px;
+  box-shadow:0 3px 16px rgba(0,0,0,0.28);
+  box-sizing:border-box;
+  font-family:Arial, sans-serif;
+}
+
+#appNav button{
+  flex:1;
+  width:auto;
+  min-height:48px;
+  margin:0;
+  padding:8px 6px;
+  border:0;
+  border-radius:10px;
+  background:#f2f2f2;
+  font-size:14px;
+  font-weight:bold;
+  line-height:1.2;
+  touch-action:manipulation;
+}
+
+#appNav button.active{
+  background:#1f6f43;
+  color:white;
+}
+
+#modePanel{
+  position:fixed;
+  inset:0;
+  z-index:1500;
+  display:none;
+  background:#f5f7f5;
+  padding:20px 20px calc(90px + var(--safe-bottom));
+  box-sizing:border-box;
+  overflow:auto;
+  font-family:Arial, sans-serif;
+}
+
+#modePanel.open{ display:block; }
+
+.mode-card{
+  max-width:780px;
+  margin:48px auto 0;
+  background:white;
+  border-radius:16px;
+  box-shadow:0 3px 18px rgba(0,0,0,0.15);
+  padding:28px;
+}
+
+.mode-card h2{ margin-top:0; }
+.mode-card p{ line-height:1.6; }
+.mode-status{
+  display:inline-block;
+  margin-top:10px;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#eef4ef;
+  font-size:13px;
+}
+
+
+/* ================= Estadísticas Huanipaca ================= */
+#statisticsPanel{
+  position:fixed;
+  top:10px;
+  left:10px;
+  z-index:1900;
+  display:none;
+  width:330px;
+  max-height:calc(100vh - 100px);
+  overflow:auto;
+  box-sizing:border-box;
+  background:rgba(255,255,255,0.97);
+  border-radius:12px;
+  box-shadow:0 3px 16px rgba(0,0,0,0.28);
+  padding:14px;
+  font-family:Arial,sans-serif;
+}
+#statisticsPanel.open{display:block;}
+#statisticsPanel h2{margin:0 0 10px;font-size:20px;}
+#statisticsPanel label{display:block;font-weight:bold;margin-top:9px;}
+#statisticsPanel select{
+  width:100%; min-height:42px; margin-top:5px; padding:7px;
+  border:1px solid #bbb; border-radius:7px; background:white; font-size:15px;
+}
+.stats-help{margin:10px 0;padding:9px;background:#eef6f0;border-radius:8px;font-size:13px;line-height:1.4;}
+.stats-selected{font-size:13px;font-weight:bold;margin:8px 0;color:#1f6f43;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.stats-item{background:#f4f6f4;border-radius:7px;padding:7px;min-height:45px;}
+.stats-item .k{font-size:11px;color:#555;display:block;}
+.stats-item .v{font-size:14px;font-weight:bold;display:block;margin-top:2px;}
+.stats-section{margin-top:12px;border-top:1px solid #ddd;padding-top:9px;}
+.stats-section h3{font-size:14px;margin:0 0 6px;}
+.stats-table{width:100%;border-collapse:collapse;font-size:12px;}
+.stats-table td{padding:4px 3px;border-bottom:1px solid #eee;vertical-align:top;}
+.stats-table td:last-child{text-align:right;font-weight:bold;white-space:nowrap;}
+.stats-empty{color:#666;font-size:13px;margin-top:8px;}
+#statsWaterNote{font-size:11px;color:#666;line-height:1.35;margin-top:8px;}
+
+@media (max-width:768px){
+  #statisticsPanel{
+    width:min(300px, calc(100% - 20px));
+    max-height:calc(100vh - 90px);
+    top:64px;
+    padding:11px;
+  }
+  #statisticsPanel h2{font-size:17px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+}
+
+/* Tablet: botones táctiles y menú algo más amplio */
+@media (min-width:769px) and (max-width:1200px){
+  .control-box{
+    width:270px;
+    max-height:calc(100vh - 100px);
+  }
+  .control-box button{
+    min-height:44px;
+    font-size:16px;
+  }
+  .leaflet-bottom{
+    bottom:82px !important;
+  }
+}
+
+@media (max-width:768px){
+  #appNav{
+    bottom:calc(8px + var(--safe-bottom));
+    width:calc(100% - 16px);
+  }
+  #appNav button{
+    min-height:46px;
+    font-size:11px;
+    padding:6px 3px;
+  }
+  #modePanel{
+    padding:12px 12px calc(82px + var(--safe-bottom));
+  }
+  .mode-card{
+    margin-top:62px;
+    padding:20px;
+  }
+}
+
+
+#simulationPanel{display:none;position:absolute;top:12px;left:12px;width:330px;max-height:calc(100vh - 98px);overflow:auto;z-index:1200;background:rgba(255,255,255,.96);border-radius:12px;box-shadow:0 3px 14px rgba(0,0,0,.24);padding:14px;box-sizing:border-box}
+#simulationPanel.open{display:block} #simulationPanel h2{margin:0 0 10px;font-size:20px}
+#simulationPanel label{display:block;font-weight:600;margin:9px 0 4px}
+#simulationPanel select,#simulationPanel button{width:100%;box-sizing:border-box;min-height:38px;margin-bottom:6px}
+.sim-help{font-size:12px;color:#555;line-height:1.4;margin:7px 0}.sim-selected{font-weight:700;margin:7px 0;font-size:13px}
+.sim-summary{margin-top:8px;padding:8px;border-radius:8px;background:#f3f5f7;font-size:13px}
+.sim-lc-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid #e4e4e4;font-size:13px}
+.sim-version{font-size:11px;color:#666;margin-top:7px}.sim-note{font-size:12px;color:#8a5a00;background:#fff6dc;padding:7px;border-radius:7px;margin-top:7px}
+@media(max-width:700px){#simulationPanel{left:8px;right:8px;top:8px;width:auto;max-height:46vh}}
+
+
+.sim-result{display:none;margin-top:10px;padding:10px;border-radius:9px;background:#eef6fb;border:1px solid #b8d6e8;font-size:12px;line-height:1.4}
+.sim-result.open{display:block}.sim-result table{width:100%;border-collapse:collapse}.sim-result td{padding:3px 2px;vertical-align:top}.sim-result td:last-child{text-align:right;font-weight:600}
+.sim-run{background:#1976d2;color:white;border:0;border-radius:6px;font-weight:700}.sim-clear{background:#f5f5f5;border:1px solid #bbb;border-radius:6px}.sim-status{font-size:12px;margin:6px 0;color:#555}
+.sim-fire-table{width:100%;border-collapse:collapse;margin-top:7px}.sim-fire-table th,.sim-fire-table td{border:1px solid #ccc;padding:3px 4px;font-size:11px}.sim-fire-table th{background:#f5f5f5}.sim-compare{display:flex;gap:6px;margin-top:7px}.sim-compare button{width:50%;min-height:32px;margin:0}.sim-compare button.active{font-weight:700;outline:2px solid #555}
+
+.install-status{
+  font-size:12px;
+  line-height:1.35;
+  background:#eef7ef;
+  border:1px solid #b7d8ba;
+  padding:7px 8px;
+  border-radius:7px;
+  margin-top:7px;
+}
+.install-actions{display:flex;gap:6px;margin-top:6px}
+.install-actions button{flex:1;min-height:34px}
+.offline-ok{color:#1b7f3a;font-weight:700}
+.offline-warn{color:#9a6700;font-weight:700}
+</style>
+
+</head>
+
+<body>
+
+<button id="menuToggle">☰ Menú</button>
+
+<!-- ================= UI ================= -->
+
+<div class="control-box" id="menuBox">
+
+<div
+   class="logo-container"
+   onclick="showProjectInfo()"
+>
+
+   <img src="logo.png" class="project-logo">
+
+   <span class="info-icon">
+      ℹ️
+   </span>
+
+   <div class="logo-title">
+      Monitoreo Forestal
+   </div>
+
+</div>
+
+<hr>
+
+<b>Distrito</b>
+
+<button onclick="showArea('Huanipaca')">Huanipaca</button>
+<button onclick="showArea('Yanatile')">Yanatile</button>
+<button onclick="showArea('SJO')">San Juan del Oro</button>
+
+<hr>
+    
+<button id="gpsButton" onclick="toggleGPS()">
+📍 GPS ON
+</button>
+
+<hr>
+
+<b>Transparencia</b>
+
+<input
+type="range"
+min="0"
+max="1"
+step="0.1"
+value="1"
+id="opacitySlider">
+
+<hr>
+
+<label>
+
+<input type="checkbox" id="labelToggle">
+Localidades
+
+</label>
+
+<hr>
+
+<b>Años de Incendio</b>
+
+<div class="year-list">
+
+<label><input type="checkbox" value="2017"> 2017</label><br>
+<label><input type="checkbox" value="2018"> 2018</label><br>
+<label><input type="checkbox" value="2019"> 2019</label><br>
+<label><input type="checkbox" value="2020"> 2020</label><br>
+<label><input type="checkbox" value="2021"> 2021</label><br>
+<label><input type="checkbox" value="2022"> 2022</label><br>
+<label><input type="checkbox" value="2023"> 2023</label><br>
+<label><input type="checkbox" value="2024"> 2024</label><br>
+<label><input type="checkbox" value="2025"> 2025</label><br>
+
+</div>
+
+<button onclick="loadSelectedFires()">
+Mostrar Incendios
+</button>
+
+<button onclick="clearFires()">
+Borrar Incendios
+</button>
+
+</div>
+
+<!-- ================= Navegación principal Tablet/PWA ================= -->
+<div id="appNav" aria-label="Funciones principales">
+  <button id="navVisualization" class="active" onclick="setAppMode('visualization')">🗺️<br>Visualización</button>
+  <button id="navStatistics" onclick="setAppMode('statistics')">📊<br>Estadísticas</button>
+  <button id="navSimulation" onclick="setAppMode('simulation')">🧭<br>Simulación</button>
+</div>
+
+<div id="modePanel" aria-live="polite">
+  <div class="mode-card">
+    <h2 id="modeTitle"></h2>
+    <p id="modeText"></p>
+    <span class="mode-status">Base preparada — se implementará en la siguiente etapa</span>
+  </div>
+</div>
+
+
+<!-- ================= Estadísticas ================= -->
+<div id="statisticsPanel">
+  <h2>📊 Estadísticas</h2>
+  <label>Distrito</label>
+  <select id="statsDistrict" onchange="changeStatisticsDistrict()">
+    <option value="Huanipaca">Huanipaca</option>
+    <option value="Yanatile">Yanatile</option>
+    <option value="SJO">San Juan del Oro</option>
+  </select>
+
+  <label>Unidad de análisis</label>
+  <select id="statsUnit" onchange="changeStatisticsUnit()">
+    <option value="2km2">Microcuenca 2 km²</option>
+    <option value="10km2">Microcuenca 10 km²</option>
+  </select>
+
+  <div class="stats-help">Toque una microcuenca en el mapa para mostrar sus estadísticas.</div>
+  <div id="statsSelected" class="stats-selected">Ninguna microcuenca seleccionada</div>
+  <div id="statsContent" class="stats-empty">Seleccione una microcuenca.</div>
+<div style="font-size:11px;color:#666;margin-top:6px;">Versión de datos: 2026-08-27 / Tablet Part 2 v5</div>
+</div>
+
+
+<div id="simulationPanel">
+<h2>🧭 Simulación</h2>
+<label>Distrito</label>
+<select id="simDistrict" onchange="changeSimulationDistrict()">
+<option value="Huanipaca">Huanipaca</option><option value="Yanatile">Yanatile</option><option value="SJO">San Juan del Oro</option>
+</select>
+<label>Unidad de análisis</label>
+<select id="simUnit" onchange="changeSimulationUnit()"><option value="2km2">Microcuenca 2 km²</option><option value="10km2">Microcuenca 10 km²</option></select>
+<label>Tipo de simulación</label>
+<select id="simType" onchange="clearSimulationAffected()"><option value="water">Recursos hídricos</option><option value="fire">Riesgo de incendio</option></select>
+<div class="sim-help">1. Toque una microcuenca.<br>2. Toque las cuadrículas de 100 m para seleccionar o deseleccionar.<br>3. Revise la cobertura actual y elija el uso futuro.</div>
+<div id="simWatershedSelected" class="sim-selected">Ninguna microcuenca seleccionada</div>
+<div id="simGridSummary" class="sim-summary">Seleccione una microcuenca para crear la cuadrícula.</div>
+<label>Cobertura actual del suelo</label><div id="simCurrentLC" class="sim-summary">Seleccione al menos una cuadrícula.</div>
+<label>Cambiar a</label>
+<select id="simChangeTo"><option value="1">Bosque primario</option><option value="6">Plantación de eucaliptos</option><option value="8">Agroforesteria</option><option value="9">Cultivos temporales</option><option value="14">Pastos naturales y cultivados</option></select>
+<div id="simStatus" class="sim-status"></div>
+<button class="sim-run" onclick="runTabletSimulation()">Ejecutar simulación</button>
+<button class="sim-clear" onclick="clearSimulationSelection()">Borrar selección</button>
+<div id="simResult" class="sim-result"></div>
+<div class="sim-note">Part 3-3: Recursos hídricos y Riesgo de incendio funcionan en los 3 distritos. Se añadió Relieve DEM como mapa base. Los GeoPackage de cobertura terrestre de Yanatile y San Juan del Oro ya fueron recibidos y se incorporarán al cálculo por cuadrícula en la siguiente actualización.</div>
+<div class="sim-version">Tablet Part 4 / Offline install / 3 distritos / 2026-08-30</div>
+<div class="install-status" id="installStatus">
+  Estado PWA: comprobando…
+  <div class="install-actions">
+    <button id="installAppButton" style="display:none" onclick="installTabletApp()">Instalar aplicación</button>
+    <button onclick="refreshOfflineStatus()">Comprobar offline</button>
+  </div>
+</div>
+</div>
+
+<!-- ================= Mapa ================= -->
+
+<div id="map"></div>
+
+<script src="data/simulation/fire_risk_embedded.js?v=part4"></script>
+<script>
+
+// ================= Mapa =================
+
+var map = L.map('map',{
+
+   zoomControl:false
+
+}).setView([-13.5, -72.5], 7);
+
+L.control.zoom({
+
+   position:'topright'
+
+}).addTo(map);
+
+
+// ================= Estadísticas: estado =================
+var statisticsLayer = null;
+var selectedStatisticsFeature = null;
+var currentStatisticsUnit = '2km2';
+var statisticsDataPaths = {
+   'Huanipaca': {
+      '2km2':'data/basin_Huanipaca_2km2.geojson',
+      '10km2':'data/basin_Huanipaca_10km2.geojson'
+   },
+   'Yanatile': {
+      '2km2':'data/basin_Yanatile_2km2.geojson',
+      '10km2':'data/basin_Yanatile_10km2.geojson'
+   },
+   'SJO': {
+      '2km2':'data/basin_SJO_2km2.geojson',
+      '10km2':'data/basin_SJO_10km2.geojson'
+   }
+};
+
+
+var simulationWatershedLayer=null, simulationGridLayer=null, simulationAffectedLayer=null, selectedSimulationWatershed=null;
+var selectedSimulationCells=new Map(), simulationLookup={}, simulationUtmCache={}, simulationRasterCache={};
+var simulationWatershedPaths={
+ 'Huanipaca':{'2km2':'data/basin_Huanipaca_2km2.geojson','10km2':'data/basin_Huanipaca_10km2.geojson'},
+ 'Yanatile':{'2km2':'data/basin_Yanatile_2km2.geojson','10km2':'data/basin_Yanatile_10km2.geojson'},
+ 'SJO':{'2km2':'data/basin_SJO_2km2.geojson','10km2':'data/basin_SJO_10km2.geojson'}
+};
+var simulationDistrictInfo={'Huanipaca':{zone:18},'Yanatile':{zone:18},'SJO':{zone:19}};
+fetch('data/simulation/landuse_lookup.json?v=part4',{cache:'no-store'}).then(r=>r.json()).then(d=>simulationLookup=d).catch(()=>simulationLookup={});
+
+// ================= Mapa base =================
+
+var osm = L.tileLayer(
+
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+
+{
+  attribution:'© OpenStreetMap'
+}
+
+).addTo(map);
+
+var esri = L.tileLayer(
+
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+
+{
+  attribution:
+    'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
+
+}
+);
+
+map.on('baselayerchange', function(e){
+
+   if(
+      e.layer === esri ||
+      e.layer === offlineSatelliteLayer ||
+      e.layer === demReliefLayer
+   ){
+
+      updateLabelColor(true);
+
+   }else{
+
+      updateLabelColor(false);
+
+   }
+
+});
+
+// ================= estado =================
+
+var currentArea = null;
+var boundaryLayer = null;
+var placeLabelsLayer = null;
+var waterLayer = null;
+var fireRiskLayer = null;
+var degradationLayer = null;
+var landuseLayer = null;
+var offlineSatelliteLayer = null;
+var demReliefLayer = null;
+var fireLayers = [];
+var overlayControl = null;
+var activeOverlayLayer = null;
+var gpsMarker = null;
+var gpsCircle = null;
+var gpsWatchId = null;
+var gpsEnabled = false;
+var firstGPSFix = true;
+var topLayer = null;
+
+// Al agregar una superposición
+map.on('overlayadd', function(e){
+
+   // Si se añade algo que no sea uso del suelo, se considera una capa superior
+   if(e.layer !== landuseLayer){
+
+      topLayer = e.layer;
+
+      topLayer.bringToFront();
+
+      if(boundaryLayer){
+         boundaryLayer.bringToFront();
+      }
+
+   }
+
+});
+
+// Al eliminar la superposición
+map.on('overlayremove', function(e){
+
+   if(topLayer===e.layer){
+
+      topLayer=null;
+
+   }
+
+});
+
+// ================= Color por año =================
+
+var fireColors = {
+
+  2017:"#e41a1c", // rojo
+  2018:"#377eb8", // azul
+  2019:"#4daf4a", // verde
+  2020:"#984ea3", // púrpura
+  2021:"#ff7f00", // naranja
+  2022:"#ffff33", // amarillo
+  2023:"#a65628", // marrón
+  2024:"#f781bf", // rosa
+  2025:"#17becf"  // celeste
+
+};
+
+// ================= Datos =================
+
+var areaData = {
+
+  "Huanipaca": {
+
+    bounds:[
+      [-13.58,-73.17],
+      [-13.38,-72.83]
+    ],
+
+    satellite:'Huanipaca_satellite.jpg',
+
+    satelliteBounds:[
+      [-13.619358023, -73.206407449],
+      [-13.338095507, -72.704069542]
+    ],
+
+    demRelief:'Huanipaca_dem_relief.jpg',
+
+  demBounds:[[-13.575469433236092, -73.16059649962133], [-13.38232732434394, -72.83822359910755]],
+
+  firerisk:'Huanipaca_firerisk.png',
+
+    water:'Huanipaca_water.png',
+
+    degradation:'Huanipaca_degradation.png',
+
+    landuse:'Huanipaca_landuse.png',
+
+    boundary:'Huanipaca.geojson',
+    labels:'Huanipaca_labels.geojson'
+
+  },
+
+"Yanatile": {
+
+  bounds:[
+    [-13.03,-72.38],
+    [-12.50,-71.82]
+  ],
+
+  satellite:'Yanatile_satellite.jpg',
+
+  satelliteBounds:[
+    [-13.069229743, -72.416069662],
+    [-12.461699116, -71.777816652]
+  ],
+
+  demRelief:'Yanatile_dem_relief.jpg',
+
+  demBounds:[[-13.02617444994668, -72.37103707610527], [-12.504085120621957, -71.8230133506629]],
+
+  firerisk:'Yanatile_firerisk.png',
+
+  water:'Yanatile_water.png',
+
+  degradation:'Yanatile_degradation.png',
+
+  landuse:'Yanatile_landuse.png',
+
+  boundary:'Yanatile.geojson',
+  labels:'Yanatile_labels.geojson'
+
+},
+
+  "SJO": {
+
+    bounds:[
+      [-14.27,-69.22],
+      [-14.13,-68.96]
+    ],
+
+    satellite:'SJO_satellite.jpg',
+
+    satelliteBounds:[
+      [-14.318157482, -69.220852028],
+      [-14.134721501, -68.965910150]
+    ],
+
+    demRelief:'SJO_dem_relief.jpg',
+
+  demBounds:[[-14.263385816038026, -69.21738274418819], [-14.137967647325171, -68.96874296823347]],
+
+  firerisk:'SJO_firerisk.png',
+
+    water:'SJO_water.png',
+
+    degradation:'SJO_degradation.png',
+
+    landuse:'SJO_landuse.png',
+
+    boundary:'SJO.geojson',
+    labels:'SJO_labels.geojson'
+
+  }
+
+};
+
+// ================= Etiqueta ON/OFF =================
+
+document.getElementById("labelToggle")
+.addEventListener("change", function(e){
+
+   if(!placeLabelsLayer) return;
+
+   if(e.target.checked){
+
+      map.addLayer(placeLabelsLayer);
+
+      // Cambiar el color según el fondo
+      setTimeout(function(){
+
+         updateLabelColor(
+            map.hasLayer(esri) ||
+            (
+               offlineSatelliteLayer &&
+               map.hasLayer(offlineSatelliteLayer)
+            )
+         );
+
+      },100);
+
+   }else{
+
+      map.removeLayer(placeLabelsLayer);
+
+   }
+
+});
+
+// =================transparencia =================
+document.getElementById("opacitySlider")
+.addEventListener("input", function(e){
+
+   var opacity = parseFloat(e.target.value);
+
+   if(topLayer){
+
+      topLayer.setOpacity(opacity);
+
+   }
+
+});
+
+// ================= Cambiar color de etiqueta =================
+
+function updateLabelColor(isSatellite){
+
+   if(!placeLabelsLayer) return;
+
+   placeLabelsLayer.eachLayer(function(layer){
+
+      if(layer.getTooltip()){
+
+         var el = layer.getTooltip().getElement();
+
+         if(!el) return;
+
+         if(isSatellite){
+
+           el.className =
+           "leaflet-tooltip place-label place-label-light";
+
+         }else{
+
+             el.className =
+               "leaflet-tooltip place-label place-label-dark";
+
+        }
+
+      }
+
+   });
+
+}
+
+// ================= Mostrar área =================
+
+function showArea(area){
+
+  currentArea = area;
+
+  clearFires();
+
+  var data = areaData[area];
+
+  map.fitBounds(data.bounds);
+
+  // ===== Eliminar capa antigua =====
+
+  if(boundaryLayer){
+
+    map.removeLayer(boundaryLayer);
+
+  }
+
+  if(placeLabelsLayer){
+
+    map.removeLayer(placeLabelsLayer);
+
+  }
+
+  if(fireRiskLayer){
+
+    map.removeLayer(fireRiskLayer);
+
+  }
+
+  if(waterLayer){
+
+    map.removeLayer(waterLayer);
+
+  }
+
+  if(degradationLayer){
+
+    map.removeLayer(degradationLayer);
+
+  }
+
+  if(landuseLayer){
+
+   map.removeLayer(landuseLayer);
+
+  }
+
+  if(offlineSatelliteLayer){map.removeLayer(offlineSatelliteLayer);offlineSatelliteLayer=null;}
+if(demReliefLayer){map.removeLayer(demReliefLayer);demReliefLayer=null;}
+
+// ===== Offline Satellite =====
+
+if(data.satellite && data.satelliteBounds){
+
+   offlineSatelliteLayer = L.imageOverlay(
+      data.satellite,
+      data.satelliteBounds,
+      {
+         opacity:1.0,
+         interactive:false
+      }
+   );
+
+}
+
+if(data.demRelief && data.demBounds){demReliefLayer=L.imageOverlay(data.demRelief,data.demBounds,{opacity:1.0,interactive:false});}
+
+// ===== Superposición PNG =====
+
+fireRiskLayer = L.imageOverlay(
+  data.firerisk,
+  data.bounds,
+  {opacity:1.0}
+);
+
+waterLayer = L.imageOverlay(
+  data.water,
+  data.bounds,
+  {opacity:1.0}
+);
+
+degradationLayer = L.imageOverlay(
+  data.degradation,
+  data.bounds,
+  {opacity:1.0}
+);
+
+landuseLayer = L.imageOverlay(
+  data.landuse,
+  data.bounds,
+  {
+    opacity:1.0
+  }
+);
+
+// Por si acaso, borré lo demás
+if(map.hasLayer(waterLayer)){
+  map.removeLayer(waterLayer);
+}
+
+if(map.hasLayer(degradationLayer)){
+  map.removeLayer(degradationLayer);
+}
+
+  // ===== Control de superposición =====
+
+  if(overlayControl){
+
+    map.removeControl(overlayControl);
+
+  }
+
+var baseMaps = {
+
+  "🗺 Mapa Base": osm,
+  "🛰 Satélite (Online)": esri
+
+};
+
+if(offlineSatelliteLayer){baseMaps["🛰 Satélite (Offline)"]=offlineSatelliteLayer;}
+if(demReliefLayer){baseMaps["⛰ Relieve DEM"]=demReliefLayer;}
+
+overlayControl = L.control.layers(
+
+  baseMaps,
+
+  {
+
+    "🌾 Uso de la tierra": landuseLayer,
+    "🌲 Degradación del bosque": degradationLayer,
+    "🔥 Riesgo de incendios": fireRiskLayer,
+    "💧 Recursos hídricos": waterLayer
+
+  },
+
+  {
+    collapsed: window.innerWidth <= 768
+  }
+
+).addTo(map);
+
+
+  // ===== Leyenda de Uso de Suelo ON/OFF =====
+
+    landuseLayer.on("add",function(){
+
+       landuseLegend.addTo(map);
+
+    });
+
+    landuseLayer.on("remove",function(){
+
+       map.removeControl(landuseLegend);
+
+    });
+
+  // ===== Leyenda de la Degradación Forestal =====
+
+  degradationLayer.on("add",function(){
+
+     degradationLegend.addTo(map);
+
+  });
+
+  degradationLayer.on("remove",function(){
+
+     map.removeControl(degradationLegend);
+
+  });
+
+
+  // ===== Leyenda de Recursos Hídricos =====
+
+   waterLayer.on("add",function(){
+
+      waterLegend.addTo(map);
+
+   });
+
+   waterLayer.on("remove",function(){
+
+      map.removeControl(waterLegend);
+
+   });
+
+  // ===== Leyenda de Riesgo de Incendio =====
+
+  fireRiskLayer.on("add",function(){
+
+     fireRiskLegend.addTo(map);
+
+  });
+
+  fireRiskLayer.on("remove",function(){
+
+     map.removeControl(fireRiskLegend);
+
+  });
+
+  // ===== Límite =====
+
+  fetch(data.boundary)
+
+  .then(function(response){
+
+    return response.json();
+
+  })
+
+  .then(function(geojson){
+
+    boundaryLayer = L.geoJSON(
+
+      geojson,
+
+      {
+
+        style:{
+
+          color:"red",
+
+          weight:3,
+
+          fillOpacity:0
+
+        }
+
+      }
+
+    ).addTo(map);
+
+    boundaryLayer.bringToFront();
+
+    // スマホならメニュー閉じる
+    if(window.innerWidth<=768){
+
+    document
+    .getElementById("menuBox")
+    .classList.remove("open");
+
+}
+
+  });
+
+// ===== Localidades =====
+
+fetch(data.labels)
+
+.then(function(response){
+
+   return response.json();
+
+})
+
+.then(function(geojson){
+
+   placeLabelsLayer = L.geoJSON(
+
+      geojson,
+
+      {
+
+         pointToLayer:function(feature,latlng){
+
+            return L.circleMarker(
+               latlng,
+               {
+                  radius:1,
+                  opacity:0,
+                  fillOpacity:0
+               }
+            );
+
+         },
+
+         onEachFeature:function(feature,layer){
+
+  　　　　　　 var isSatellite =
+                 map.hasLayer(esri) ||
+                 (
+                     offlineSatelliteLayer &&
+                     map.hasLayer(offlineSatelliteLayer)
+                 );
+
+             var labelClass =
+                 isSatellite
+                 ? 'place-label place-label-light'
+                 : 'place-label place-label-dark';
+
+　　　　　　   layer.bindTooltip(
+
+      　　　　　　feature.properties.name,
+
+     　　　　　　 {
+　　　
+         　　　　　　permanent:true,
+         　　　　　　direction:'top',
+         　　　　　　className: labelClass
+
+   　　　　　　   }
+
+   　　　　　);
+
+　　　　　}
+
+      }
+
+   );
+
+   if(
+      document.getElementById(
+   　  "labelToggle"
+ 　　　).checked
+　　){
+
+   　　placeLabelsLayer.addTo(map);
+
+   // Cambiar el color del texto según el fondo actual
+   if(
+      map.hasLayer(esri) ||
+      (
+         offlineSatelliteLayer &&
+         map.hasLayer(offlineSatelliteLayer)
+      )
+   ){
+
+      updateLabelColor(true);
+
+   }else{
+
+      updateLabelColor(false);
+
+   }
+
+}
+
+});
+
+}
+
+// ================= Leyenda de la Degradación Forestal =================
+
+var degradationLegend = L.control({
+
+   position:'bottomleft'
+
+});
+
+degradationLegend.onAdd = function(map){
+
+   var div = L.DomUtil.create(
+      'div',
+      'legend'
+   );
+
+   div.innerHTML =
+      "<b>Degradación del bosque</b><br>" +
+      '<i style="background:#fd5857"></i>Fuerte<br>' +
+      '<i style="background:#f4fd5e"></i>Medio<br>' +
+      '<i style="background:#00ad22"></i>Débil<br>';
+
+   return div;
+
+};
+
+// ================= Leyenda de Riesgo de Incendio =================
+
+var fireRiskLegend = L.control({
+   position:'bottomleft'
+});
+
+fireRiskLegend.onAdd = function(map){
+
+   var div = L.DomUtil.create(
+      'div',
+      'legend'
+   );
+
+   div.innerHTML =
+      '<b>Riesgo de incendios</b><br>' +
+      '<i style="background:#d62125"></i>Muy alto<br>' +
+      '<i style="background:#f5ad58"></i>Alto<br>' +
+      '<i style="background:#ffffbf"></i>Moderado<br>' +
+      '<i style="background:#aeee97"></i>Bajo<br>' +
+      '<i style="background:#3195e8"></i>Muy bajo<br>';
+
+   return div;
+
+};
+
+// ================= Leyenda de Recursos Hídricos =================
+
+var waterLegend = L.control({
+
+   position:'bottomleft'
+
+});
+
+waterLegend.onAdd = function(map){
+
+   var div = L.DomUtil.create(
+      'div',
+      'legend'
+   );
+
+   div.innerHTML =
+
+   '<b>Recursos hídricos</b><br>' +
+
+   '<div style="' +
+   'display:flex;' +
+   'align-items:center;' +
+   '">' +
+
+   '<div style="' +
+   'width:18px;' +
+   'height:120px;' +
+   'background:linear-gradient(' +
+   'to top,' +
+   '#e65c5e 0%,' +
+   '#f5a66b 25%,' +
+   '#fff6b0 50%,' +
+   '#a8dca0 75%,' +
+   '#2379d0 100%' +
+   ');' +
+   'margin-right:8px;' +
+   '"></div>' +
+
+   '<div style="' +
+   'height:120px;' +
+   'display:flex;' +
+   'flex-direction:column;' +
+   'justify-content:space-between;' +
+   'font-size:11px;' +
+   '">' +
+
+   '<span>≥ 500 mm</span>' +
+   '<span>250 mm</span>' +
+   '<span>0 mm</span>' +
+
+   '</div>' +
+
+   '</div>';
+
+   return div;
+
+};
+
+// ================= Indicador de incendio =================
+
+function loadSelectedFires(){
+
+  if(!currentArea){
+
+    alert("Select district first");
+
+    return;
+  }
+
+  clearFires();
+
+  var checkedYears =
+
+    document.querySelectorAll(
+      '.year-list input:checked'
+    );
+    // 年が1つ以上選ばれたら表示
+
+  if(checkedYears.length>0){
+
+     legend.addTo(map);
+
+  }
+
+  checkedYears.forEach(item => {
+
+    var year = item.value;
+
+    var path =
+
+      'fires/' +
+      currentArea +
+      '_fire_' +
+      year +
+      '.geojson';
+
+    fetch(path)
+
+    .then(function(response){
+
+      if(!response.ok){
+
+        throw new Error(path);
+
+      }
+
+      return response.json();
+
+    })
+
+    .then(function(data){
+
+      var color =
+        fireColors[year];
+
+      var layer = L.geoJSON(data, {
+
+        style:function(){
+
+          return {
+
+            color:color,
+
+            weight:1,
+
+            fillColor:color,
+
+            fillOpacity:parseFloat(
+
+              document.getElementById(
+                "opacitySlider"
+              ).value
+
+            )
+
+          };
+
+        },
+
+        pointToLayer:function(feature, latlng){
+
+          return L.circleMarker(latlng, {
+
+            radius:5,
+
+            fillColor:color,
+
+            color:"#000",
+
+            weight:1,
+
+            fillOpacity:parseFloat(
+
+              document.getElementById(
+                "opacitySlider"
+              ).value
+
+            )
+
+          });
+
+        }
+
+      }).addTo(map);
+
+      fireLayers.push(layer);
+
+      layer.bringToFront();
+
+      if(boundaryLayer){
+
+        boundaryLayer.bringToFront();
+
+      }
+
+    })
+
+    .catch(function(error){
+
+      console.log(error);
+
+      alert(
+        "Cannot load:\n" + path
+      );
+
+    });
+
+  });
+
+}
+
+// ================= Eliminación de incendios =================
+
+function clearFires(){
+
+  fireLayers.forEach(layer => {
+
+    map.removeLayer(layer);
+
+  });
+
+  fireLayers=[];
+
+  map.removeControl(legend);
+
+}
+// ================= Leyenda de Uso de Suelo =================
+
+var landuseLegend=L.control({
+
+   position:'bottomright'
+
+});
+
+landuseLegend.onAdd=function(map){
+
+   var div=L.DomUtil.create(
+      'div',
+      'legend'
+   );
+
+   div.innerHTML=
+   "<b>Uso de Suelo</b><br>"+
+
+   '<i style="background:#008f0c"></i>Bosque<br>'+
+   '<i style="background:#0093ff"></i>Plantaciones<br>'+
+   '<i style="background:#ff978f"></i>Matorral<br>'+
+   '<i style="background:#ffa300"></i>Agroforesteria<br>'+
+   '<i style="background:#a68942"></i>Cultivos temporales<br>'+
+   '<i style="background:#f7ff56"></i>Pajonal<br>'+
+   '<i style="background:#a8ff56"></i>Pastos<br>'+
+   '<i style="background:#aaaaaa"></i>Rocas<br>'+
+   '<i style="background:#0012ff"></i>Cuerpos de agua<br>'+
+   '<i style="background:#c879ed"></i>Zona urbana<br>';
+
+   return div;
+
+};
+
+// ================= Leyenda =================
+
+var legend = L.control({
+
+  position:'bottomright'
+
+});
+
+legend.onAdd = function(map){
+
+  var div = L.DomUtil.create(
+    'div',
+    'legend'
+  );
+
+  div.innerHTML +=
+    "<b>Años de Incendio</b><br>";
+
+  for(var year in fireColors){
+
+    div.innerHTML +=
+
+      '<i style="background:' +
+      fireColors[year] +
+      '"></i>' +
+
+      year +
+
+      '<br>';
+
+  }
+
+  return div;
+};
+
+// ================= GPS =================
+
+function toggleGPS(){
+
+  if(!gpsEnabled){
+
+    startGPS();
+
+  }else{
+
+    stopGPS();
+
+  }
+
+}
+
+function startGPS(){
+
+  if(!navigator.geolocation){
+
+    alert("Geolocation is not supported");
+
+    return;
+
+  }
+
+  gpsEnabled = true;
+
+  document.getElementById("gpsButton")
+    .innerHTML = "❌ GPS OFF";
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+
+    function(position) {
+
+        var lat = position.coords.latitude;
+        var lon = position.coords.longitude;
+        var accuracy = position.coords.accuracy;
+
+        var latlng = [lat, lon];
+
+        // Eliminar GPS antiguo
+        if (gpsMarker) {
+
+            map.removeLayer(gpsMarker);
+
+        }
+
+        if (gpsCircle) {
+
+            map.removeLayer(gpsCircle);
+
+        }
+
+        // Marcador de ubicación actual
+        gpsMarker = L.circleMarker(latlng,{
+
+           radius:10,
+           color:'#ffffff',
+           weight:3,
+           fillColor:'#ff0000',
+           fillOpacity:1
+
+        }).addTo(map);
+
+        // círculo de precisión
+        gpsCircle = L.circle(latlng, {
+
+            radius: accuracy,
+            color:'#ff0000',
+            weight:1,
+            fillColor: '#ff0000',
+            fillOpacity: 0.08
+
+        }).addTo(map);
+
+        // Moverse a la ubicación actual solo la primera vez
+        if (firstGPSFix) {
+
+            map.setView(latlng, 15);
+
+            firstGPSFix = false;
+
+        }
+    },
+
+    function(error){
+
+      console.log(error);
+
+      alert("Cannot get GPS");
+
+    },
+
+    {
+
+      enableHighAccuracy:true,
+      maximumAge:0,
+      timeout:10000
+
+    }
+
+  );
+
+}
+
+function stopGPS(){
+
+  gpsEnabled = false;
+
+  document.getElementById("gpsButton")
+    .innerHTML = "📍 GPS ON";
+
+  if(gpsWatchId !== null){
+
+    navigator.geolocation.clearWatch(gpsWatchId);
+
+  }
+
+  if(gpsMarker){
+
+    map.removeLayer(gpsMarker);
+
+  }
+
+  if(gpsCircle){
+
+    map.removeLayer(gpsCircle);
+
+  }
+  // Para moverse de nuevo al centro la próxima vez que se encienda
+  firstGPSFix = true;
+}
+
+function showProjectInfo(){
+
+   var popupWidth =
+      window.innerWidth < 768
+      ? 250
+      : 500;
+
+   L.popup({
+      maxWidth: popupWidth
+   })
+
+   .setLatLng(map.getCenter())
+
+   .setContent(
+
+   "<div style='font-size:12px;line-height:1.4;'>"+
+
+   "<b>Proyecto CEFORAA</b><br><br>"+
+
+   "Este visor fue desarrollado en el marco del Programa SATREPS financiado por JST y JICA.<br><br>"+
+
+   "<b>Proyecto:</b><br>"+
+
+   "Proyecto de Establecimiento de Modelo de Sistema Integrado de Manejo Forestal para la Conservación de Ecosistemas Forestales de Montaña en la Región Andina-Amazónica (CEFORAA)<br><br>"+
+
+   "<b>Instituciones participantes:</b><br>"+
+
+   "• UNALM<br>"+
+   "• SERFOR<br>"+
+   "• FFPRI<br>"+
+   "• Universidad de Chiba<br>"+
+   "• Universidad de Kyushu<br>"+
+   "• JAFTA"+
+
+   "</div>"
+   )
+
+   .openOn(map);
+
+}
+
+// ================= Abrir / Cerrar menú =================
+
+document
+.getElementById("menuToggle")
+.addEventListener("click",function(){
+
+    document
+    .getElementById("menuBox")
+    .classList.toggle("open");
+
+});
+
+// ================= Tablet/PWA: cambio de función =================
+
+function setAppMode(mode){
+
+   var panel = document.getElementById('modePanel');
+   var statsPanel = document.getElementById('statisticsPanel');
+   var simPanel = document.getElementById('simulationPanel');
+   var menuBox = document.getElementById('menuBox');
+   var menuToggle = document.getElementById('menuToggle');
+   var title = document.getElementById('modeTitle');
+   var text = document.getElementById('modeText');
+
+   ['navVisualization','navStatistics','navSimulation']
+      .forEach(function(id){
+         document.getElementById(id).classList.remove('active');
+      });
+
+   panel.classList.remove('open');
+   statsPanel.classList.remove('open');
+   simPanel.classList.remove('open');
+
+   if(mode === 'visualization'){
+      document.getElementById('navVisualization').classList.add('active');
+      menuBox.style.display = '';
+      menuToggle.style.display = '';
+      clearStatisticsLayer(); clearSimulationLayers();
+      setTimeout(function(){ map.invalidateSize(); }, 50);
+      return;
+   }
+
+   if(mode === 'statistics'){
+      document.getElementById('navStatistics').classList.add('active');
+      menuBox.style.display = 'none';
+      menuToggle.style.display = 'none';
+      statsPanel.classList.add('open');
+
+      // Start Statistics with the district currently shown in Visualization.
+      // If no district has been chosen yet, use Huanipaca.
+      var statsArea = currentArea || 'Huanipaca';
+      if(!statisticsDataPaths[statsArea]){
+         statsArea = 'Huanipaca';
+      }
+      document.getElementById('statsDistrict').value = statsArea;
+      showArea(statsArea);
+      loadStatisticsLayer(document.getElementById('statsUnit').value);
+      setTimeout(function(){ map.invalidateSize(); }, 50);
+      return;
+   }
+
+   document.getElementById('navSimulation').classList.add('active');
+   menuBox.style.display='none'; menuToggle.style.display='none'; clearStatisticsLayer();
+   panel.classList.remove('open'); simPanel.classList.add('open');
+   var simArea = currentArea || 'Huanipaca'; if(!simulationWatershedPaths[simArea]) simArea='Huanipaca';
+   document.getElementById('simDistrict').value=simArea; showArea(simArea);
+   loadSimulationWatersheds(document.getElementById('simUnit').value);
+   setTimeout(function(){map.invalidateSize();},50);
+}
+
+
+function simulationWatershedStyle(){return {color:'#00bcd4',weight:1.2,dashArray:'5,4',fillColor:'#fff',fillOpacity:.02};}
+function simDistrict(){return document.getElementById('simDistrict').value;}
+function clearSimulationAffected(){if(simulationAffectedLayer){map.removeLayer(simulationAffectedLayer);simulationAffectedLayer=null;}document.getElementById('simResult').classList.remove('open');document.getElementById('simResult').innerHTML='';}
+function clearSimulationLayers(){clearSimulationAffected();if(simulationGridLayer){map.removeLayer(simulationGridLayer);simulationGridLayer=null}if(simulationWatershedLayer){map.removeLayer(simulationWatershedLayer);simulationWatershedLayer=null}selectedSimulationWatershed=null;selectedSimulationCells.clear()}
+function changeSimulationDistrict(){clearSimulationLayers();var d=simDistrict();showArea(d);loadSimulationWatersheds(document.getElementById('simUnit').value);}
+function changeSimulationUnit(){clearSimulationLayers();loadSimulationWatersheds(document.getElementById('simUnit').value)}
+function loadSimulationWatersheds(unit){
+ clearSimulationLayers(); var d=simDistrict(); document.getElementById('simWatershedSelected').textContent='Ninguna microcuenca seleccionada';
+ document.getElementById('simGridSummary').textContent='Seleccione una microcuenca para crear la cuadrícula.'; document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';
+ document.getElementById('simStatus').textContent='';
+ fetch(simulationWatershedPaths[d][unit]+'?v=part4',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No se pudo cargar la microcuenca');return r.json()}).then(data=>{
+  simulationWatershedLayer=L.geoJSON(data,{style:simulationWatershedStyle,onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);selectSimulationWatershed(f,l,unit)})}).addTo(map);
+  if(simulationWatershedLayer.getBounds().isValid())map.fitBounds(simulationWatershedLayer.getBounds(),{padding:[12,12]});
+ }).catch(e=>document.getElementById('simGridSummary').textContent=e.message)
+}
+async function getUtmWatersheds(d,unit){var key=d+'_'+unit;if(simulationUtmCache[key])return simulationUtmCache[key];var p='data/simulation/watershed_utm/'+key+'.json?v=part4';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la geometría UTM');var j=await r.json();simulationUtmCache[key]=j;return j;}
+async function selectSimulationWatershed(f,l,unit){
+ clearSimulationAffected(); simulationWatershedLayer.eachLayer(x=>simulationWatershedLayer.resetStyle(x));l.setStyle({color:'#ff8c00',weight:3,fillOpacity:.04});if(l.bringToFront)l.bringToFront();
+ selectedSimulationWatershed=f;selectedSimulationCells.clear();document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';var dn=f.properties.DN,simid=(simDistrict()==='Huanipaca'?dn:f.properties.SIM_ID);
+ document.getElementById('simWatershedSelected').textContent='Microcuenca seleccionada: '+dn;await loadSimulationGrid(unit,simid,dn)
+}
+function parseCellLC(t){let o={};if(!t)return o;String(t).split(',').forEach(p=>{let a=p.split(':');if(a.length===2){let c=parseInt(a[0],10),v=parseFloat(a[1]);if(Number.isFinite(c)&&Number.isFinite(v))o[c]=v}});return o}
+function simGridStyle(f){let s=selectedSimulationCells.has(f.properties.Cell_ID);return {color:s?'#f00':'#777',weight:s?1.4:.65,fillColor:s?'#f00':'#fff',fillOpacity:s?.50:.06}}
+
+// WGS84 UTM conversion, used locally so the app remains offline-capable.
+function utmToLatLon(E,N,zone){var a=6378137.0,e=0.0818191908426215,e1sq=0.006739496742276434,k0=0.9996;var x=E-500000.0,y=N-10000000.0;var M=y/k0,mu=M/(a*(1-Math.pow(e,2)/4-3*Math.pow(e,4)/64-5*Math.pow(e,6)/256));var e1=(1-Math.sqrt(1-e*e))/(1+Math.sqrt(1-e*e));var J1=3*e1/2-27*Math.pow(e1,3)/32,J2=21*e1*e1/16-55*Math.pow(e1,4)/32,J3=151*Math.pow(e1,3)/96,J4=1097*Math.pow(e1,4)/512;var fp=mu+J1*Math.sin(2*mu)+J2*Math.sin(4*mu)+J3*Math.sin(6*mu)+J4*Math.sin(8*mu);var C1=e1sq*Math.pow(Math.cos(fp),2),T1=Math.pow(Math.tan(fp),2),R1=a*(1-e*e)/Math.pow(1-e*e*Math.pow(Math.sin(fp),2),1.5),N1=a/Math.sqrt(1-e*e*Math.pow(Math.sin(fp),2)),D=x/(N1*k0);var Q1=N1*Math.tan(fp)/R1,Q2=D*D/2,Q3=(5+3*T1+10*C1-4*C1*C1-9*e1sq)*Math.pow(D,4)/24,Q4=(61+90*T1+298*C1+45*T1*T1-252*e1sq-3*C1*C1)*Math.pow(D,6)/720;var lat=fp-Q1*(Q2-Q3+Q4);var Q5=D-(1+2*T1+C1)*Math.pow(D,3)/6+(5-2*C1+28*T1-3*C1*C1+8*e1sq+24*T1*T1)*Math.pow(D,5)/120;var lon0=(zone-1)*6-180+3;var lon=lon0+Q5/Math.cos(fp)*180/Math.PI;return [lat*180/Math.PI,lon]}
+function latLonToUtm(lat,lon,zone){var a=6378137.0,eccSquared=0.00669438,k0=0.9996;var latRad=lat*Math.PI/180,lonRad=lon*Math.PI/180,lonOrigin=(zone-1)*6-180+3,lonOriginRad=lonOrigin*Math.PI/180;var eccPrimeSquared=eccSquared/(1-eccSquared),N=a/Math.sqrt(1-eccSquared*Math.sin(latRad)*Math.sin(latRad)),T=Math.tan(latRad)*Math.tan(latRad),C=eccPrimeSquared*Math.cos(latRad)*Math.cos(latRad),A=Math.cos(latRad)*(lonRad-lonOriginRad);var M=a*((1-eccSquared/4-3*eccSquared*eccSquared/64-5*Math.pow(eccSquared,3)/256)*latRad-(3*eccSquared/8+3*eccSquared*eccSquared/32+45*Math.pow(eccSquared,3)/1024)*Math.sin(2*latRad)+(15*eccSquared*eccSquared/256+45*Math.pow(eccSquared,3)/1024)*Math.sin(4*latRad)-(35*Math.pow(eccSquared,3)/3072)*Math.sin(6*latRad));var E=k0*N*(A+(1-T+C)*Math.pow(A,3)/6+(5-18*T+T*T+72*C-58*eccPrimeSquared)*Math.pow(A,5)/120)+500000;var NN=k0*(M+N*Math.tan(latRad)*(A*A/2+(5-T+9*C+4*C*C)*Math.pow(A,4)/24+(61-58*T+T*T+600*C-330*eccPrimeSquared)*Math.pow(A,6)/720));if(lat<0)NN+=10000000;return [E,NN]}
+function pointOnSegment(px,py,x1,y1,x2,y2){var cross=(px-x1)*(y2-y1)-(py-y1)*(x2-x1);if(Math.abs(cross)>1e-7)return false;return px>=Math.min(x1,x2)-1e-7&&px<=Math.max(x1,x2)+1e-7&&py>=Math.min(y1,y2)-1e-7&&py<=Math.max(y1,y2)+1e-7}
+function pointInRing(x,y,ring){var inside=false;for(var i=0,j=ring.length-1;i<ring.length;j=i++){var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];if(pointOnSegment(x,y,xi,yi,xj,yj))return true;var hit=((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi);if(hit)inside=!inside}return inside}
+function pointInPolygonCoords(x,y,rings){if(!rings||!rings.length||!pointInRing(x,y,rings[0]))return false;for(var i=1;i<rings.length;i++)if(pointInRing(x,y,rings[i]))return false;return true}
+function pointInUtmGeometry(x,y,g){if(g.type==='Polygon')return pointInPolygonCoords(x,y,g.coordinates);if(g.type==='MultiPolygon')return g.coordinates.some(p=>pointInPolygonCoords(x,y,p));return false}
+function geomBounds(g){var b=[Infinity,Infinity,-Infinity,-Infinity];function walk(c){if(typeof c[0]==='number'){b[0]=Math.min(b[0],c[0]);b[1]=Math.min(b[1],c[1]);b[2]=Math.max(b[2],c[0]);b[3]=Math.max(b[3],c[1]);}else c.forEach(walk)}walk(g.coordinates);return b}
+function dynamicGridFeature(x0,y0,zone,id){var ll1=utmToLatLon(x0,y0,zone),ll2=utmToLatLon(x0+100,y0,zone),ll3=utmToLatLon(x0+100,y0+100,zone),ll4=utmToLatLon(x0,y0+100,zone);return {type:'Feature',properties:{Cell_ID:id,Area_ha:1.0,LC:'',XMIN:x0,YMIN:y0,XMAX:x0+100,YMAX:y0+100},geometry:{type:'Polygon',coordinates:[[[ll1[1],ll1[0]],[ll2[1],ll2[0]],[ll3[1],ll3[0]],[ll4[1],ll4[0]],[ll1[1],ll1[0]]]]}}}
+async function buildDynamicGrid(d,unit,simid){var u=await getUtmWatersheds(d,unit),g=u.features[String(simid)];if(!g)throw Error('No se encontró la microcuenca UTM');var b=geomBounds(g),features=[],id=1;var xmin=b[0],ymax=b[3];for(var x=xmin;x<b[2];x+=100){for(var top=ymax;top>b[1];top-=100){var y=top-100,cx=x+50,cy=y+50;if(pointInUtmGeometry(cx,cy,g))features.push(dynamicGridFeature(x,y,simulationDistrictInfo[d].zone,id++));}}return {type:'FeatureCollection',features:features}}
+function featureUtmBounds(f,d){var p=f.properties;if(Number.isFinite(Number(p.XMIN)))return [Number(p.XMIN),Number(p.YMIN),Number(p.XMAX),Number(p.YMAX)];var zone=simulationDistrictInfo[d].zone,coords=f.geometry.coordinates[0],xs=[],ys=[];coords.forEach(c=>{var u=latLonToUtm(c[1],c[0],zone);xs.push(u[0]);ys.push(u[1])});return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]}
+async function loadSimulationGrid(unit,simid,dn){
+ if(simulationGridLayer)map.removeLayer(simulationGridLayer);clearSimulationAffected();selectedSimulationCells.clear();var d=simDistrict();document.getElementById('simGridSummary').textContent='Creando / cargando cuadrícula de 100 m…';
+ try{var data;if(d==='Huanipaca'){var p='data/simulation/Huanipaca/'+unit+'/'+dn+'.geojson?v=part4';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la cuadrícula');data=await r.json();}else data=await buildDynamicGrid(d,unit,simid);
+ simulationGridLayer=L.geoJSON(data,{style:simGridStyle,onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);toggleSimulationCell(f,l)})}).addTo(map);if(simulationGridLayer.getBounds().isValid())map.fitBounds(simulationGridLayer.getBounds(),{padding:[20,20]});updateSimulationSummary(data.features.length)}catch(e){document.getElementById('simGridSummary').textContent=e.message}
+}
+function toggleSimulationCell(f,l){clearSimulationAffected();let id=f.properties.Cell_ID;if(selectedSimulationCells.has(id))selectedSimulationCells.delete(id);else selectedSimulationCells.set(id,f);l.setStyle(simGridStyle(f));updateSimulationSummary();updateSimulationCurrentLC()}
+function updateSimulationSummary(total){if(total===undefined&&simulationGridLayer){total=0;simulationGridLayer.eachLayer(()=>total++)}total=total||0;let area=0;selectedSimulationCells.forEach(f=>area+=Number(f.properties.Area_ha||0));document.getElementById('simGridSummary').innerHTML='<b>Cuadrículas:</b> '+total+'<br><b>Seleccionadas:</b> '+selectedSimulationCells.size+'<br><b>Área seleccionada:</b> '+area.toFixed(2)+' ha'}
+function updateSimulationCurrentLC(){let b=document.getElementById('simCurrentLC');if(!selectedSimulationCells.size){b.textContent='Seleccione al menos una cuadrícula.';return}if(simDistrict()!=='Huanipaca'){b.textContent='Datos de cobertura terrestre por cuadrícula aún no incorporados para este distrito.';return}let totals={},ta=0;selectedSimulationCells.forEach(f=>{let x=parseCellLC(f.properties.LC);Object.keys(x).forEach(c=>{totals[c]=(totals[c]||0)+x[c];ta+=x[c]})});if(ta<=0){b.textContent='No hay datos de cobertura terrestre.';return}let rows=Object.keys(totals).map(c=>({c:c,a:totals[c],p:totals[c]/ta*100})).sort((a,z)=>z.a-a.a);b.innerHTML=rows.map(r=>'<div class="sim-lc-row"><span>'+(simulationLookup[r.c]||('Clase '+r.c))+'</span><b>'+r.p.toFixed(1)+' %</b></div>').join('')}
+function clearSimulationSelection(){clearSimulationAffected();selectedSimulationCells.clear();if(simulationGridLayer)simulationGridLayer.eachLayer(l=>l.setStyle(simGridStyle(l.feature)));updateSimulationSummary();updateSimulationCurrentLC();document.getElementById('simStatus').textContent=''}
+
+function typedArrayFromBuffer(buf,dtype){if(dtype==='float32')return new Float32Array(buf);if(dtype==='float64')return new Float64Array(buf);if(dtype==='int16')return new Int16Array(buf);if(dtype==='uint8')return new Uint8Array(buf);throw Error('Tipo de raster no soportado')}
+async function loadRasterMeta(d){var k=d+'_meta';if(simulationRasterCache[k])return simulationRasterCache[k];var r=await fetch('data/simulation/rasters/'+d+'/meta.json?v=part4',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar metadatos raster');var j=await r.json();simulationRasterCache[k]=j;return j}
+function decodeEmbeddedUint8(base64Text){
+ var binary=atob(base64Text),n=binary.length,a=new Uint8Array(n);
+ for(var i=0;i<n;i++)a[i]=binary.charCodeAt(i);
+ return a;
+}
+async function loadRasterArray(d,name,meta){
+ var k=d+'_'+name;
+ if(simulationRasterCache[k])return simulationRasterCache[k];
+ var m=meta.rasters[name];
+
+ // Fire Risk is embedded in the app package so it does not depend on a
+ // Service Worker / fetch response. The three files are small (< 0.4 MB each).
+ if(name==='fire_risk'){
+   var source=window.EMBEDDED_FIRE_RISK_BASE64&&window.EMBEDDED_FIRE_RISK_BASE64[d];
+   if(!source)throw Error('Datos fire_risk integrados no encontrados: '+d);
+   var fireArray=decodeEmbeddedUint8(source);
+   var expected=m.width*m.height;
+   if(fireArray.length!==expected){
+     throw Error('Tamaño fire_risk incorrecto: '+fireArray.length+' / '+expected);
+   }
+   simulationRasterCache[k]=fireArray;
+   return fireArray;
+ }
+
+ var r=await fetch(m.path+'?v=part4',{cache:'no-store'});
+ if(!r.ok)throw Error('No se pudo cargar '+name+' (HTTP '+r.status+')');
+ var buffer=await r.arrayBuffer();
+ var a=typedArrayFromBuffer(buffer,m.dtype);
+ var bytesPerElement=a.BYTES_PER_ELEMENT||1;
+ var expectedBytes=m.width*m.height*bytesPerElement;
+ if(buffer.byteLength!==expectedBytes){
+   throw Error('Tamaño '+name+' incorrecto: '+buffer.byteLength+' / '+expectedBytes);
+ }
+ simulationRasterCache[k]=a;
+ return a;
+}
+function rasterPixelIdsForBounds(bounds,m,set){var a=m.transform[0],e=m.transform[4],c=m.transform[2],f=m.transform[5];var c0=Math.max(0,Math.floor((bounds[0]-c)/a)-1),c1=Math.min(m.width-1,Math.ceil((bounds[2]-c)/a)+1);var r0=Math.max(0,Math.floor((f-bounds[3])/(-e))-1),r1=Math.min(m.height-1,Math.ceil((f-bounds[1])/(-e))+1);for(var row=r0;row<=r1;row++){var y=f+e*(row+.5);if(y<bounds[1]-1e-7||y>bounds[3]+1e-7)continue;for(var col=c0;col<=c1;col++){var x=c+a*(col+.5);if(x>=bounds[0]-1e-7&&x<=bounds[2]+1e-7)set.add(row*m.width+col)}}}
+function pointInLonLatFeature(lon,lat,feature){
+ var g=feature.geometry;
+ function ringHit(ring){var inside=false;for(var i=0,j=ring.length-1;i<ring.length;j=i++){var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];var hit=((yi>lat)!=(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi);if(hit)inside=!inside;}return inside;}
+ function polyHit(poly){if(!ringHit(poly[0]))return false;for(var h=1;h<poly.length;h++)if(ringHit(poly[h]))return false;return true;}
+ if(g.type==='Polygon')return polyHit(g.coordinates);
+ if(g.type==='MultiPolygon')return g.coordinates.some(polyHit);
+ return false;
+}
+function selectedPixelIds(m,d){
+ var s=new Set(),zone=simulationDistrictInfo[d].zone,a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5],bb=[Infinity,Infinity,-Infinity,-Infinity];
+ selectedSimulationCells.forEach(function(f){var b=featureUtmBounds(f,d);bb[0]=Math.min(bb[0],b[0]);bb[1]=Math.min(bb[1],b[1]);bb[2]=Math.max(bb[2],b[2]);bb[3]=Math.max(bb[3],b[3]);});
+ var c0=Math.max(0,Math.floor((bb[0]-x0)/a)-1),c1=Math.min(m.width-1,Math.ceil((bb[2]-x0)/a)+1),r0=Math.max(0,Math.floor((y0-bb[3])/(-e))-1),r1=Math.min(m.height-1,Math.ceil((y0-bb[1])/(-e))+1);
+ for(var r=r0;r<=r1;r++)for(var c=c0;c<=c1;c++){var x=x0+a*(c+.5),y=y0+e*(r+.5),ll=utmToLatLon(x,y,zone),hit=false;selectedSimulationCells.forEach(function(f){if(!hit&&pointInLonLatFeature(ll[1],ll[0],f))hit=true;});if(hit)s.add(r*m.width+c);}
+ return s;
+}
+function rasterStatsFromIds(arr,m,ids){var sum=0,count=0,min=Infinity,max=-Infinity,nd=m.nodata;ids.forEach(id=>{var v=arr[id];if(!Number.isFinite(v))return;if(nd!==null&&v===nd)return;sum+=v;count++;if(v<min)min=v;if(v>max)max=v});var area=count*m.pixelAreaM2,vol=sum*m.pixelAreaM2/1000;return {count:count,sum_mm:sum,mean_mm:count?sum/count:0,minimum_mm:count?min:null,maximum_mm:count?max:null,area_m2:area,area_ha:area/10000,volume_m3_month:vol}}
+function flowOffset(v){v=Math.trunc(v);if(v===0||v===-1)return null;var d=Math.abs(v),o={1:[-1,1],2:[-1,0],3:[-1,-1],4:[0,-1],5:[1,-1],6:[1,0],7:[1,1],8:[0,1]};return o[d]||null}
+function validCell(r,c,m){return r>=0&&r<m.height&&c>=0&&c<m.width}
+function startingFlowCells(flowMeta,d){
+ var s=new Set(),m=flowMeta.rasters.flow_direction,zone=simulationDistrictInfo[d].zone,a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5],bb=[Infinity,Infinity,-Infinity,-Infinity];
+ selectedSimulationCells.forEach(function(f){var b=featureUtmBounds(f,d);bb[0]=Math.min(bb[0],b[0]);bb[1]=Math.min(bb[1],b[1]);bb[2]=Math.max(bb[2],b[2]);bb[3]=Math.max(bb[3],b[3]);});
+ var c0=Math.max(0,Math.floor((bb[0]-x0)/a)-1),c1=Math.min(m.width-1,Math.ceil((bb[2]-x0)/a)+1),r0=Math.max(0,Math.floor((y0-bb[3])/(-e))-1),r1=Math.min(m.height-1,Math.ceil((y0-bb[1])/(-e))+1);
+ for(var r=r0;r<=r1;r++)for(var c=c0;c<=c1;c++){var x=x0+a*(c+.5),y=y0+e*(r+.5),ll=utmToLatLon(x,y,zone),hit=false;selectedSimulationCells.forEach(function(f){if(!hit&&pointInLonLatFeature(ll[1],ll[0],f))hit=true;});if(hit)s.add(r*m.width+c);}
+ return s;
+}
+function traceDownstream(startId,dir,m,maxSteps){var path=[],seen=new Set(),id=startId;for(var k=0;k<maxSteps;k++){var r=Math.floor(id/m.width),c=id-r*m.width;if(!validCell(r,c,m)||seen.has(id))break;seen.add(id);path.push(id);var v=dir[id];if(m.nodata!==null&&v===m.nodata)break;var off=flowOffset(v);if(!off)break;var leaves=v<-1,nr=r+off[0],nc=c+off[1];if(!validCell(nr,nc,m))break;id=nr*m.width+nc;if(leaves){path.push(id);break}}return path}
+function traceShared(startIds,dir,m){var paths=[];startIds.forEach(id=>{var p=traceDownstream(id,dir,m,100000);if(p.length)paths.push(p)});if(!paths.length)return new Set();var counts=new Map();paths.forEach(p=>{new Set(p).forEach(id=>counts.set(id,(counts.get(id)||0)+1))});var req=Math.max(3,Math.ceil(paths.length*.40)),out=new Set();paths.forEach(p=>{var stop=-1;for(var i=3;i<p.length;i++){if((counts.get(p[i])||0)>=req){stop=i;break}}if(stop>=0)p.slice(0,stop+1).forEach(id=>out.add(id));else p.slice(0,Math.min(p.length,30)).forEach(id=>out.add(id))});return out}
+function pythonRound(x){var f=Math.floor(x),r=x-f;if(r<.5)return f;if(r>.5)return f+1;return (f%2===0)?f:f+1}
+function createValley(core,startIds,acc,flowM,accM){var vals=[];core.forEach(id=>{var v=acc[id];if(Number.isFinite(v)&&v>0)vals.push(v)});if(!vals.length){var ex=new Set(core);core.forEach(id=>{var r=Math.floor(id/flowM.width),c=id-r*flowM.width;for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++)if(validCell(r+dr,c+dc,flowM))ex.add((r+dr)*flowM.width+c+dc)});return ex}var amin=Math.min(...vals),amax=Math.max(...vals),lmin=Math.log1p(amin),lmax=Math.log1p(amax),out=new Set(core);startIds.forEach(id=>out.add(id));core.forEach(id=>{var v=acc[id],rad=1;if(Number.isFinite(v)&&v>0&&lmax>lmin){var norm=(Math.log1p(v)-lmin)/(lmax-lmin);norm=Math.max(0,Math.min(1,norm));rad=pythonRound(1+norm*2);rad=Math.max(1,Math.min(3,rad))}var r=Math.floor(id/flowM.width),c=id-r*flowM.width;for(var dr=-rad;dr<=rad;dr++)for(var dc=-rad;dc<=rad;dc++){if(dr*dr+dc*dc>rad*rad)continue;var nr=r+dr,nc=c+dc;if(validCell(nr,nc,flowM))out.add(nr*flowM.width+nc)}});return out}
+function waterIdsForAffected(flowIds,flowM,waterM){var s=new Set(),fa=flowM.transform[0],fe=flowM.transform[4],fx=flowM.transform[2],fy=flowM.transform[5];flowIds.forEach(id=>{var r=Math.floor(id/flowM.width),c=id-r*flowM.width,x1=fx+fa*c,x2=x1+fa,y2=fy+fe*r,y1=y2+fe;var b=[Math.min(x1,x2),Math.min(y1,y2),Math.max(x1,x2),Math.max(y1,y2)];rasterPixelIdsForBounds(b,waterM,s)});return s}
+function renderAffected(flowIds,m,d,sign){clearSimulationAffected();var rows=new Map();flowIds.forEach(id=>{var r=Math.floor(id/m.width),c=id-r*m.width;if(!rows.has(r))rows.set(r,[]);rows.get(r).push(c)});var zone=simulationDistrictInfo[d].zone,parts=[],a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];rows.forEach((cols,r)=>{cols.sort((x,y)=>x-y);var start=cols[0],prev=cols[0];function add(s,p){var xl=x0+a*s,xr=x0+a*(p+1),yt=y0+e*r,yb=y0+e*(r+1),ll1=utmToLatLon(xl,yb,zone),ll2=utmToLatLon(xr,yt,zone),bb=[[ll1[0],ll1[1]],[ll2[0],ll2[1]]];parts.push(L.rectangle(bb,{color:'#222',weight:3,opacity:.85,fill:false,interactive:false}));parts.push(L.rectangle(bb,{color:'#ff9d00',weight:1.5,opacity:1,dashArray:'5,3',fillColor:sign>0?'#32b450':sign<0?'#e6463c':'#e6be28',fillOpacity:.15,interactive:false}))}for(var i=1;i<cols.length;i++){if(cols[i]===prev+1)prev=cols[i];else{add(start,prev);start=prev=cols[i]}}add(start,prev)});simulationAffectedLayer=L.layerGroup(parts).addTo(map);}
+function fmt(v,n){return Number(v).toLocaleString('es-PE',{minimumFractionDigits:n,maximumFractionDigits:n})}
+async function runWaterSimulation(){if(!selectedSimulationWatershed){alert('Seleccione primero una microcuenca.');return}if(!selectedSimulationCells.size){alert('Seleccione al menos una cuadrícula de 100 m.');return}clearSimulationAffected();var st=document.getElementById('simStatus');st.textContent='Calculando recursos hídricos…';try{var d=simDistrict(),code=parseInt(document.getElementById('simChangeTo').value,10),suffix=({1:'nf',6:'pl',8:'sf',9:'ot',14:'ot'})[code];if(!suffix)throw Error('Uso futuro no compatible');var meta=await loadRasterMeta(d);var curM=meta.rasters.current,futM=meta.rasters[suffix],flowM=meta.rasters.flow_direction,accM=meta.rasters.flow_accumulation;var arrays=await Promise.all([loadRasterArray(d,'current',meta),loadRasterArray(d,suffix,meta),loadRasterArray(d,'flow_direction',meta),loadRasterArray(d,'flow_accumulation',meta)]),cur=arrays[0],fut=arrays[1],dir=arrays[2],acc=arrays[3];var curIds=selectedPixelIds(curM,d),futIds=selectedPixelIds(futM,d),cs=rasterStatsFromIds(cur,curM,curIds),fs=rasterStatsFromIds(fut,futM,futIds),diff=fs.volume_m3_month-cs.volume_m3_month,pct=cs.volume_m3_month!==0?diff/cs.volume_m3_month*100:null;st.textContent='Trazando el área potencialmente afectada…';var starts=startingFlowCells(meta,d),core=traceShared(starts,dir,flowM),affected=createValley(core,starts,acc,flowM,accM);if(!affected.size)throw Error('No se pudo obtener el área afectada');var affectedWaterIds=waterIdsForAffected(affected,flowM,curM),as=rasterStatsFromIds(cur,curM,affectedWaterIds),affectedArea=affected.size*flowM.pixelAreaM2/10000,impact=as.volume_m3_month!==0?diff/as.volume_m3_month*100:null;renderAffected(affected,flowM,d,diff);var changeName=document.getElementById('simChangeTo').selectedOptions[0].textContent,desc=diff>0?'Aumento':diff<0?'Disminución':'Sin cambio',color=diff>0?'#1b7f3a':diff<0?'#b42318':'#8a6d00',area=selectedSimulationCells.size;var box=document.getElementById('simResult');box.innerHTML='<b>Resultado de la simulación de recursos hídricos</b><table><tr><td>Cambio de uso propuesto:</td><td>'+changeName+'</td></tr><tr><td>Área modificada:</td><td>'+fmt(area,2)+' ha</td></tr><tr><td>Disponibilidad hídrica antes:</td><td>'+fmt(cs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Disponibilidad hídrica después:</td><td>'+fmt(fs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>'+desc+':</td><td style="color:'+color+'">'+(diff>=0?'+':'')+fmt(diff,2)+' m³/mes</td></tr><tr><td>Cambio en el área modificada:</td><td>'+(pct===null?'No calculable':(pct>=0?'+':'')+fmt(pct,2)+' %')+'</td></tr><tr><td colspan="2"><hr></td></tr><tr><td>Área potencialmente afectada:</td><td>'+fmt(affectedArea,2)+' ha</td></tr><tr><td>Disponibilidad hídrica actual en el área afectada:</td><td>'+fmt(as.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Impacto relativo sobre el área afectada:</td><td>'+(impact===null?'No calculable':(impact>=0?'+':'')+fmt(impact,2)+' %')+'</td></tr></table><div style="margin-top:6px;font-style:italic">El impacto relativo compara el cambio estimado en el área modificada con el volumen actual de disponibilidad hídrica del área potencialmente afectada.</div>';box.classList.add('open');st.textContent='Simulación completada.';}catch(e){console.error(e);st.textContent='Error: '+e.message;}}
+
+function upstreamNeighborIds(targetId,dir,m){var tr=Math.floor(targetId/m.width),tc=targetId-tr*m.width,out=[];for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++){if(dr===0&&dc===0)continue;var nr=tr+dr,nc=tc+dc;if(!validCell(nr,nc,m))continue;var nid=nr*m.width+nc,v=dir[nid];if(m.nodata!==null&&v===m.nodata)continue;var off=flowOffset(v);if(!off)continue;if(nr+off[0]===tr&&nc+off[1]===tc)out.push(nid)}return out}
+function traceUpstream(startIds,dir,m,steps){var active=new Set(startIds),up=new Set(startIds),visited=new Set(startIds);for(var step=0;step<steps;step++){var next=new Set();active.forEach(id=>upstreamNeighborIds(id,dir,m).forEach(nid=>{if(!visited.has(nid)){visited.add(nid);next.add(nid)}}));if(!next.size)break;next.forEach(id=>up.add(id));active=next}return up}
+function expandFireArea(core,start,m,radius){var seed=new Set(core);start.forEach(id=>seed.add(id));var out=new Set(seed);seed.forEach(id=>{var rr=Math.floor(id/m.width),cc=id-rr*m.width;for(var dr=-radius;dr<=radius;dr++)for(var dc=-radius;dc<=radius;dc++){if(dr*dr+dc*dc>radius*radius)continue;var r=rr+dr,c=cc+dc;if(validCell(r,c,m))out.add(r*m.width+c)}});return out}
+function fireIdsInsideAffected(fireM,flowM,affected,d){var zf=fireM.zone||simulationDistrictInfo[d].zone,zflow=simulationDistrictInfo[d].zone,out=[],a=fireM.transform[0],e=fireM.transform[4],x0=fireM.transform[2],y0=fireM.transform[5];for(var r=0;r<fireM.height;r++)for(var c=0;c<fireM.width;c++){var id=r*fireM.width+c,xf=x0+a*(c+.5),yf=y0+e*(r+.5),ll=utmToLatLon(xf,yf,zf),u=latLonToUtm(ll[0],ll[1],zflow),fa=flowM.transform[0],fe=flowM.transform[4],fx=flowM.transform[2],fy=flowM.transform[5],fc=Math.floor((u[0]-fx)/fa),fr=Math.floor((fy-u[1])/(-fe));if(validCell(fr,fc,flowM)&&affected.has(fr*flowM.width+fc))out.push(id)}return out}
+function fireStats(arr,m,ids,rule){var cc=[0,0,0,0,0,0],fc=[0,0,0,0,0,0],sum=0,sumf=0,chg=0,n=0,nd=m.nodata;ids.forEach(id=>{var v=arr[id];if(!Number.isFinite(v)||(nd!==null&&v===nd))return;v=Math.round(v);if(v<1||v>5)return;var f=Math.max(1,Math.min(5,v+rule));cc[v]++;fc[f]++;sum+=v;sumf+=f;n++;if(f!==v)chg++});var pa=m.pixelAreaM2,cm=n?sum/n:0,fm=n?sumf/n:0;return {currentMean:cm,futureMean:fm,difference:fm-cm,percent:cm!==0?(fm-cm)/cm*100:null,changedPixels:chg,changedArea:chg*pa/10000,currentAreas:cc.map(x=>x*pa/10000),futureAreas:fc.map(x=>x*pa/10000)}}
+function riskColor(v){return ({1:'#3195e8',2:'#aeee97',3:'#ffffbf',4:'#f5ad58',5:'#d62125'})[v]||'#888'}
+function renderFirePixels(ids,arr,m,d,rule,after){clearSimulationAffected();var z=m.zone||simulationDistrictInfo[d].zone,parts=[],a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];ids.forEach(id=>{var v=arr[id];if(!Number.isFinite(v)||(m.nodata!==null&&v===m.nodata))return;v=Math.round(v);if(v<1||v>5)return;var cls=after?Math.max(1,Math.min(5,v+rule)):v,r=Math.floor(id/m.width),c=id-r*m.width,xl=x0+a*c,xr=x0+a*(c+1),yt=y0+e*r,yb=y0+e*(r+1),ll1=utmToLatLon(xl,yb,z),ll2=utmToLatLon(xr,yt,z);parts.push(L.rectangle([[ll1[0],ll1[1]],[ll2[0],ll2[1]]],{color:'#333',weight:.45,fillColor:riskColor(cls),fillOpacity:.72,interactive:false}))});simulationAffectedLayer=L.layerGroup(parts).addTo(map)}
+var lastFireDisplay=null;
+function setFireComparison(after){if(!lastFireDisplay)return;renderFirePixels(lastFireDisplay.ids,lastFireDisplay.arr,lastFireDisplay.meta,lastFireDisplay.d,lastFireDisplay.rule,after);document.querySelectorAll('.sim-compare button').forEach(b=>b.classList.remove('active'));var el=document.getElementById(after?'simFireAfter':'simFireCurrent');if(el)el.classList.add('active')}
+async function runFireSimulation(){if(!selectedSimulationWatershed){alert('Seleccione primero una microcuenca.');return}if(!selectedSimulationCells.size){alert('Seleccione al menos una cuadrícula de 100 m.');return}clearSimulationAffected();var st=document.getElementById('simStatus');st.textContent='Calculando riesgo de incendio…';try{var d=simDistrict(),code=parseInt(document.getElementById('simChangeTo').value,10),rule=({1:-1,6:0,8:0,9:1,14:1})[code];if(rule===undefined)throw Error('Regla de riesgo no disponible');var meta=await loadRasterMeta(d),flowM=meta.rasters.flow_direction,fireM=meta.rasters.fire_risk,arrs=await Promise.all([loadRasterArray(d,'flow_direction',meta),loadRasterArray(d,'fire_risk',meta)]),dir=arrs[0],fire=arrs[1],starts=startingFlowCells(meta,d),up=traceUpstream(starts,dir,flowM,30),affected=expandFireArea(up,starts,flowM,1);if(!affected.size)throw Error('No se pudo obtener el área afectada');var ids=fireIdsInsideAffected(fireM,flowM,affected,d),s=fireStats(fire,fireM,ids,rule),area=affected.size*flowM.pixelAreaM2/10000;lastFireDisplay={ids:ids,arr:fire,meta:fireM,d:d,rule:rule};renderFirePixels(ids,fire,fireM,d,rule,true);var lab=['','Muy bajo','Bajo','Moderado','Alto','Muy alto'],rows='';for(var k=1;k<=5;k++)rows+='<tr><td>'+k+' — '+lab[k]+'</td><td>'+fmt(s.currentAreas[k],2)+' ha</td><td>'+fmt(s.futureAreas[k],2)+' ha</td></tr>';var nm=document.getElementById('simChangeTo').selectedOptions[0].textContent,desc=s.difference<0?'Disminución del riesgo':s.difference>0?'Aumento del riesgo':'Sin cambio',col=s.difference<0?'#1b7f3a':s.difference>0?'#b42318':'#8a6d00',box=document.getElementById('simResult');box.innerHTML='<b>Resultado de la simulación de riesgo de incendio</b><table><tr><td>Cambio de uso propuesto:</td><td>'+nm+'</td></tr><tr><td>Regla aplicada:</td><td>'+(rule>=0?'+':'')+rule+' clase</td></tr><tr><td>Área potencialmente afectada:</td><td>'+fmt(area,2)+' ha</td></tr><tr><td>Píxeles con cambio efectivo:</td><td>'+s.changedPixels.toLocaleString('es-PE')+'</td></tr><tr><td>Área con cambio efectivo:</td><td>'+fmt(s.changedArea,2)+' ha</td></tr><tr><td>Riesgo medio actual:</td><td>'+fmt(s.currentMean,2)+'</td></tr><tr><td>Riesgo medio después:</td><td>'+fmt(s.futureMean,2)+'</td></tr><tr><td>'+desc+':</td><td style="color:'+col+'">'+(s.difference>=0?'+':'')+fmt(s.difference,2)+'</td></tr><tr><td>Cambio relativo:</td><td style="color:'+col+'">'+(s.percent===null?'No calculable':(s.percent>=0?'+':'')+fmt(s.percent,2)+' %')+'</td></tr></table><div class="sim-compare"><button id="simFireCurrent" onclick="setFireComparison(false)">Riesgo actual</button><button id="simFireAfter" class="active" onclick="setFireComparison(true)">Después del cambio</button></div><table class="sim-fire-table"><tr><th>Clase de riesgo</th><th>Área actual</th><th>Área futura</th></tr>'+rows+'</table><div style="margin-top:6px;font-style:italic">Las clases se mantienen entre 1 y 5. El área con cambio efectivo se calcula usando el tamaño real de los píxeles del raster.</div>';box.classList.add('open');st.textContent='Simulación completada.'}catch(e){console.error(e);st.textContent='Error: '+e.message}}
+async function runTabletSimulation(){return document.getElementById('simType').value==='fire'?runFireSimulation():runWaterSimulation()}
+
+
+var deferredInstallPrompt=null;
+
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  var b=document.getElementById('installAppButton');
+  if(b)b.style.display='block';
+  refreshOfflineStatus();
+});
+
+window.addEventListener('appinstalled',function(){
+  deferredInstallPrompt=null;
+  var b=document.getElementById('installAppButton');
+  if(b)b.style.display='none';
+  refreshOfflineStatus('Aplicación instalada.');
+});
+
+async function installTabletApp(){
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    try{await deferredInstallPrompt.userChoice;}catch(e){}
+    deferredInstallPrompt=null;
+    var b=document.getElementById('installAppButton');
+    if(b)b.style.display='none';
+    refreshOfflineStatus();
+    return;
+  }
+  alert('En iPad/iPhone: use Compartir → Añadir a pantalla de inicio. En Android/Edge/Chrome: use el menú del navegador → Instalar aplicación.');
+}
+
+async function refreshOfflineStatus(extra){
+  var box=document.getElementById('installStatus');
+  if(!box)return;
+
+  var parts=[];
+  if(extra)parts.push(extra);
+
+  var online=navigator.onLine;
+  parts.push(online
+    ? '<span class="offline-ok">Conexión: online</span>'
+    : '<span class="offline-warn">Conexión: offline</span>');
+
+  if('serviceWorker' in navigator){
+    try{
+      var reg=await navigator.serviceWorker.getRegistration();
+      parts.push(reg
+        ? '<span class="offline-ok">Service Worker: activo</span>'
+        : '<span class="offline-warn">Service Worker: no registrado</span>');
+    }catch(e){
+      parts.push('<span class="offline-warn">Service Worker: error</span>');
+    }
+  }else{
+    parts.push('<span class="offline-warn">Service Worker: no compatible</span>');
+  }
+
+  var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)
+    || window.navigator.standalone===true;
+  parts.push(standalone
+    ? '<span class="offline-ok">Modo: aplicación instalada</span>'
+    : 'Modo: navegador');
+
+  box.innerHTML='Estado PWA:<br>'+parts.join('<br>')+
+    '<div class="install-actions"><button id="installAppButton" '+(deferredInstallPrompt?'':'style="display:none"')+' onclick="installTabletApp()">Instalar aplicación</button><button onclick="refreshOfflineStatus()">Comprobar offline</button></div>';
+}
+
+window.addEventListener('online',function(){refreshOfflineStatus();});
+window.addEventListener('offline',function(){refreshOfflineStatus();});
+setTimeout(function(){refreshOfflineStatus();},1000);
+
+function changeStatisticsDistrict(){
+   var area = document.getElementById('statsDistrict').value;
+   showArea(area);
+   loadStatisticsLayer(document.getElementById('statsUnit').value);
+}
+
+function changeStatisticsUnit(){
+   var unit = document.getElementById('statsUnit').value;
+   loadStatisticsLayer(unit);
+}
+
+function clearStatisticsLayer(){
+   if(statisticsLayer){
+      map.removeLayer(statisticsLayer);
+      statisticsLayer = null;
+   }
+   selectedStatisticsFeature = null;
+}
+
+function statisticsDefaultStyle(){
+   return {
+      color:'#00a7c4',
+      weight:1.5,
+      opacity:0.9,
+      fillColor:'#36c8df',
+      fillOpacity:0.08
+   };
+}
+
+function statisticsSelectedStyle(){
+   return {
+      color:'#ff7a00',
+      weight:4,
+      opacity:1,
+      fillColor:'#ffb15c',
+      fillOpacity:0.25
+   };
+}
+
+function loadStatisticsLayer(unit){
+   currentStatisticsUnit = unit;
+   clearStatisticsLayer();
+   document.getElementById('statsSelected').textContent = 'Cargando microcuencas…';
+   document.getElementById('statsContent').innerHTML = '<div class="stats-empty">Cargando datos…</div>';
+
+   var area = document.getElementById('statsDistrict').value;
+   var path = statisticsDataPaths[area][unit];
+
+   // Development-safe cache busting. The Service Worker still keeps an
+   // offline fallback, but when the local server is available we always
+   // request the newest statistics data.
+   var requestPath = path + '?v=20260827_v5';
+
+   fetch(requestPath, {cache:'no-store'})
+      .then(function(response){
+         if(!response.ok) throw new Error('No se pudo cargar '+requestPath);
+         return response.json();
+      })
+      .then(function(data){
+         statisticsLayer = L.geoJSON(data, {
+            style: statisticsDefaultStyle,
+            onEachFeature:function(feature, layer){
+               layer.on('click', function(e){
+                  L.DomEvent.stopPropagation(e);
+                  selectStatisticsFeature(feature, layer);
+               });
+            }
+         }).addTo(map);
+
+         statisticsLayer.bringToFront();
+         document.getElementById('statsSelected').textContent = 'Ninguna microcuenca seleccionada';
+         document.getElementById('statsContent').innerHTML = '<div class="stats-empty">Seleccione una microcuenca.</div>';
+      })
+      .catch(function(error){
+         console.error(error);
+         document.getElementById('statsSelected').textContent = 'Error';
+         document.getElementById('statsContent').innerHTML = '<div class="stats-empty">No se pudieron cargar las microcuencas.</div>';
+      });
+}
+
+function selectStatisticsFeature(feature, layer){
+   // Reactivar el clic de la microcuenca seleccionada anteriormente.
+   // Esto es importante cuando existen polígonos solapados.
+   if(selectedStatisticsFeature && statisticsLayer){
+      var previousElement = selectedStatisticsFeature.getElement ? selectedStatisticsFeature.getElement() : null;
+      if(previousElement){
+         previousElement.style.pointerEvents = 'auto';
+      }
+      statisticsLayer.resetStyle(selectedStatisticsFeature);
+   }
+
+   selectedStatisticsFeature = layer;
+   layer.setStyle(statisticsSelectedStyle());
+
+   // La microcuenca seleccionada deja pasar el siguiente clic a las
+   // demás microcuencas que estén debajo, permitiendo cambiar la selección.
+   var selectedElement = layer.getElement ? layer.getElement() : null;
+   if(selectedElement){
+      selectedElement.style.pointerEvents = 'none';
+   }
+
+   var p = feature.properties || {};
+   var id = (p.DN !== null && p.DN !== undefined) ? p.DN : (p.fid || '');
+   var areaLabel = document.getElementById('statsDistrict').selectedOptions[0].textContent;
+   document.getElementById('statsSelected').textContent = areaLabel + ' — Microcuenca seleccionada: ' + id;
+   renderStatistics(p);
+}
+
+function fmt(value, decimals){
+   if(value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return 'Sin datos';
+   return Number(value).toLocaleString('es-PE', {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
+}
+
+function statItem(label, value){
+   return '<div class="stats-item"><span class="k">'+label+'</span><span class="v">'+value+'</span></div>';
+}
+
+function statRow(label, value){
+   return '<tr><td>'+label+'</td><td>'+value+'</td></tr>';
+}
+
+function numericValue(value){
+   if(value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return 0;
+   return Number(value);
+}
+
+function renderStatistics(p){
+   // Clases integradas usadas en el sistema de manejo forestal.
+   // Plantaciones = 6 (eucalipto) + 7 (pino)
+   // Pajonal/Pastos = 13 (pajonal) + 14 (pastos naturales/cultivados)
+   // Bofedal = 15
+   var plantationHa = numericValue(p.LC06_HA) + numericValue(p.LC07_HA);
+   var pajonalPastosHa = numericValue(p.LC13_HA) + numericValue(p.LC14_HA);
+   var plantationRate = numericValue(p.AREA_HA) > 0
+      ? plantationHa / numericValue(p.AREA_HA) * 100
+      : 0;
+
+   var html = '<div class="stats-grid">';
+   html += statItem('Área', fmt(p.AREA_HA,2)+' ha');
+   html += statItem('Elevación media', fmt(p.MEAN_DEM,1)+' m');
+   html += statItem('Pendiente media', fmt(p.MEAN_SLOPE,1)+'°');
+   html += statItem('Población', fmt(p.POP,0));
+   html += statItem('Densidad', fmt(p.POP_DENS,1)+' hab/km²');
+   html += statItem('Bosque', fmt(p.FOREST_RATE,1)+' %');
+   html += statItem('Plantación', fmt(plantationRate,1)+' %');
+   html += statItem('Carbono medio', fmt(p.CARBON_MEAN,1)+' t/ha');
+   html += statItem('Carbono total', fmt(p.CARBON_TOTAL,1)+' t');
+   html += statItem('Recursos hídricos', fmt(p.WATER_MEAN,2));
+   html += '</div>';
+
+   html += '<div class="stats-section"><h3>Cobertura del suelo</h3><table class="stats-table">';
+   var land = [
+      ['Bosque',p.LC01_HA], ['Bosque degradado',p.LC02_HA], ['Bosque secundario',p.LC03_HA],
+      ['Matorral',p.LC05_HA], ['Plantaciones',plantationHa], ['Agroforestería',p.LC08_HA],
+      ['Cultivos temporales',p.LC09_HA], ['Frutales',p.LC12_HA], ['Pajonal/Pastos',pajonalPastosHa],
+      ['Bofedal',p.LC15_HA], ['Rocas',p.LC16_HA],
+      ['Cuerpos de agua',p.LC17_HA], ['Zona urbana/Otros',p.LC18_HA]
+   ];
+   land.forEach(function(x){ if(x[1] !== null && x[1] !== undefined && Number(x[1]) > 0) html += statRow(x[0],fmt(x[1],2)+' ha'); });
+   html += '</table></div>';
+
+   html += '<div class="stats-section"><h3>Degradación forestal</h3><table class="stats-table">';
+   html += statRow('Débil',fmt(p.DEG1,2)+' ha');
+   html += statRow('Moderada',fmt(p.DEG2,2)+' ha');
+   html += statRow('Fuerte',fmt(p.DEG3,2)+' ha');
+   html += '</table></div>';
+
+   html += '<div class="stats-section"><h3>Riesgo de incendio</h3><table class="stats-table">';
+   html += statRow('Muy bajo',fmt(p.FIRE1,2)+' ha');
+   html += statRow('Bajo',fmt(p.FIRE2,2)+' ha');
+   html += statRow('Moderado',fmt(p.FIRE3,2)+' ha');
+   html += statRow('Alto',fmt(p.FIRE4,2)+' ha');
+   html += statRow('Muy alto',fmt(p.FIRE5,2)+' ha');
+   html += '</table></div>';
+
+   html += '<div id="statsWaterNote">“Sin datos” en Recursos hídricos se muestra únicamente cuando WATER_MEAN es nulo. Un valor 0 se conserva como 0.</div>';
+   document.getElementById('statsContent').innerHTML = html;
+}
+
+// ================= Offline Service Worker =================
+
+if ('serviceWorker' in navigator){
+
+   window.addEventListener('load', function(){
+
+      navigator.serviceWorker
+         .register('./service-worker.js?v=20260830_part4_offline', {updateViaCache:'none'})
+
+         .then(function(registration){
+
+            registration.update();
+
+            console.log(
+               'Service Worker registered:',
+               registration.scope
+            );
+
+         })
+
+         .catch(function(error){
+
+            console.log(
+               'Service Worker registration failed:',
+               error
+            );
+
+         });
+
+   });
+
+}
+
+</script>
+
+</body>
+</html>
+```

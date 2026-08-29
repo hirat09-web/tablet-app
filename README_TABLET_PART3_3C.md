@@ -1,0 +1,1 @@
+Part 3-3c: Huanipaca full 100 m grids regenerated from watershed extent top-left (yMaximum downward), matching QGIS native:creategrid orientation; centre-in-watershed rule retained. Pixel-centre raster mask from 3-3b retained.
