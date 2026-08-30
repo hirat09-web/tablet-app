@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ceforaa-tablet-part4a-landcover-v1';
+const CACHE_NAME = 'ceforaa-tablet-part4b-grid-display-v1';
 const PRECACHE_URLS = [
   "./Huanipaca.geojson",
   "./Huanipaca_degradation.png",

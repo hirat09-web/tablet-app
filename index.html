@@ -698,7 +698,7 @@ Borrar Incendios
 <button class="sim-clear" onclick="clearSimulationSelection()">Borrar selección</button>
 <div id="simResult" class="sim-result"></div>
 <div class="sim-note">Part 3-3: Recursos hídricos y Riesgo de incendio funcionan en los 3 distritos. Se añadió Relieve DEM como mapa base. La cobertura actual del suelo por cuadrícula está disponible en los 3 distritos.</div>
-<div class="sim-version">Tablet Part 4a / Offline + cobertura terrestre / 3 distritos / 2026-08-30</div>
+<div class="sim-version">Tablet Part 4b / Grid display unified / 3 distritos / 2026-08-30</div>
 <div class="install-status" id="installStatus">
   Estado PWA: comprobando…
   <div class="install-actions">
@@ -712,7 +712,7 @@ Borrar Incendios
 
 <div id="map"></div>
 
-<script src="data/simulation/fire_risk_embedded.js?v=part4a"></script>
+<script src="data/simulation/fire_risk_embedded.js?v=part4b"></script>
 <script>
 
 // ================= Mapa =================
@@ -758,7 +758,7 @@ var simulationWatershedPaths={
  'SJO':{'2km2':'data/basin_SJO_2km2.geojson','10km2':'data/basin_SJO_10km2.geojson'}
 };
 var simulationDistrictInfo={'Huanipaca':{zone:18},'Yanatile':{zone:18},'SJO':{zone:19}};
-fetch('data/simulation/landuse_lookup.json?v=part4a',{cache:'no-store'}).then(r=>r.json()).then(d=>simulationLookup=d).catch(()=>simulationLookup={});
+fetch('data/simulation/landuse_lookup.json?v=part4b',{cache:'no-store'}).then(r=>r.json()).then(d=>simulationLookup=d).catch(()=>simulationLookup={});
 
 // ================= Mapa base =================
 
@@ -1967,12 +1967,12 @@ function loadSimulationWatersheds(unit){
  clearSimulationLayers(); var d=simDistrict(); document.getElementById('simWatershedSelected').textContent='Ninguna microcuenca seleccionada';
  document.getElementById('simGridSummary').textContent='Seleccione una microcuenca para crear la cuadrícula.'; document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';
  document.getElementById('simStatus').textContent='';
- fetch(simulationWatershedPaths[d][unit]+'?v=part4a',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No se pudo cargar la microcuenca');return r.json()}).then(data=>{
+ fetch(simulationWatershedPaths[d][unit]+'?v=part4b',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No se pudo cargar la microcuenca');return r.json()}).then(data=>{
   simulationWatershedLayer=L.geoJSON(data,{style:simulationWatershedStyle,onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);selectSimulationWatershed(f,l,unit)})}).addTo(map);
   if(simulationWatershedLayer.getBounds().isValid())map.fitBounds(simulationWatershedLayer.getBounds(),{padding:[12,12]});
  }).catch(e=>document.getElementById('simGridSummary').textContent=e.message)
 }
-async function getUtmWatersheds(d,unit){var key=d+'_'+unit;if(simulationUtmCache[key])return simulationUtmCache[key];var p='data/simulation/watershed_utm/'+key+'.json?v=part4a';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la geometría UTM');var j=await r.json();simulationUtmCache[key]=j;return j;}
+async function getUtmWatersheds(d,unit){var key=d+'_'+unit;if(simulationUtmCache[key])return simulationUtmCache[key];var p='data/simulation/watershed_utm/'+key+'.json?v=part4b';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la geometría UTM');var j=await r.json();simulationUtmCache[key]=j;return j;}
 async function selectSimulationWatershed(f,l,unit){
  clearSimulationAffected(); simulationWatershedLayer.eachLayer(x=>simulationWatershedLayer.resetStyle(x));l.setStyle({color:'#ff8c00',weight:3,fillOpacity:.04});if(l.bringToFront)l.bringToFront();
  selectedSimulationWatershed=f;selectedSimulationCells.clear();document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';var dn=f.properties.DN,simid=(simDistrict()==='Huanipaca'?dn:f.properties.SIM_ID);
@@ -1994,7 +1994,7 @@ async function buildDynamicGrid(d,unit,simid){var u=await getUtmWatersheds(d,uni
 function featureUtmBounds(f,d){var p=f.properties;if(Number.isFinite(Number(p.XMIN)))return [Number(p.XMIN),Number(p.YMIN),Number(p.XMAX),Number(p.YMAX)];var zone=simulationDistrictInfo[d].zone,coords=f.geometry.coordinates[0],xs=[],ys=[];coords.forEach(c=>{var u=latLonToUtm(c[1],c[0],zone);xs.push(u[0]);ys.push(u[1])});return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]}
 async function loadSimulationGrid(unit,simid,dn){
  if(simulationGridLayer)map.removeLayer(simulationGridLayer);clearSimulationAffected();selectedSimulationCells.clear();var d=simDistrict();document.getElementById('simGridSummary').textContent='Creando / cargando cuadrícula de 100 m…';
- try{var data;if(d==='Huanipaca'){var p='data/simulation/Huanipaca/'+unit+'/'+dn+'.geojson?v=part4aa';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la cuadrícula');data=await r.json();}else{data=await buildDynamicGrid(d,unit,simid);var lcr=await fetch('data/simulation/landcover_grid/'+d+'/'+unit+'/'+simid+'.json?v=part4aa',{cache:'no-store'});if(!lcr.ok)throw Error('No se pudo cargar la cobertura terrestre de la cuadrícula');var lcmap=await lcr.json();data.features.forEach(function(f){f.properties.LC=lcmap[String(f.properties.Cell_ID)]||'';});}
+ try{var data;if(d==='Huanipaca'){var p='data/simulation/Huanipaca/'+unit+'/'+dn+'.geojson?v=part4ba';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la cuadrícula');data=await r.json();}else{data=await buildDynamicGrid(d,unit,simid);var lcr=await fetch('data/simulation/landcover_grid/'+d+'/'+unit+'/'+simid+'.json?v=part4ba',{cache:'no-store'});if(!lcr.ok)throw Error('No se pudo cargar la cobertura terrestre de la cuadrícula');var lcmap=await lcr.json();data.features.forEach(function(f){f.properties.LC=lcmap[String(f.properties.Cell_ID)]||'';});}
  simulationGridLayer=L.geoJSON(data,{style:simGridStyle,onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);toggleSimulationCell(f,l)})}).addTo(map);if(simulationGridLayer.getBounds().isValid())map.fitBounds(simulationGridLayer.getBounds(),{padding:[20,20]});updateSimulationSummary(data.features.length)}catch(e){document.getElementById('simGridSummary').textContent=e.message}
 }
 function toggleSimulationCell(f,l){clearSimulationAffected();let id=f.properties.Cell_ID;if(selectedSimulationCells.has(id))selectedSimulationCells.delete(id);else selectedSimulationCells.set(id,f);l.setStyle(simGridStyle(f));updateSimulationSummary();updateSimulationCurrentLC()}
@@ -2003,7 +2003,7 @@ function updateSimulationCurrentLC(){let b=document.getElementById('simCurrentLC
 function clearSimulationSelection(){clearSimulationAffected();selectedSimulationCells.clear();if(simulationGridLayer)simulationGridLayer.eachLayer(l=>l.setStyle(simGridStyle(l.feature)));updateSimulationSummary();updateSimulationCurrentLC();document.getElementById('simStatus').textContent=''}
 
 function typedArrayFromBuffer(buf,dtype){if(dtype==='float32')return new Float32Array(buf);if(dtype==='float64')return new Float64Array(buf);if(dtype==='int16')return new Int16Array(buf);if(dtype==='uint8')return new Uint8Array(buf);throw Error('Tipo de raster no soportado')}
-async function loadRasterMeta(d){var k=d+'_meta';if(simulationRasterCache[k])return simulationRasterCache[k];var r=await fetch('data/simulation/rasters/'+d+'/meta.json?v=part4a',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar metadatos raster');var j=await r.json();simulationRasterCache[k]=j;return j}
+async function loadRasterMeta(d){var k=d+'_meta';if(simulationRasterCache[k])return simulationRasterCache[k];var r=await fetch('data/simulation/rasters/'+d+'/meta.json?v=part4b',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar metadatos raster');var j=await r.json();simulationRasterCache[k]=j;return j}
 function decodeEmbeddedUint8(base64Text){
  var binary=atob(base64Text),n=binary.length,a=new Uint8Array(n);
  for(var i=0;i<n;i++)a[i]=binary.charCodeAt(i);
@@ -2028,7 +2028,7 @@ async function loadRasterArray(d,name,meta){
    return fireArray;
  }
 
- var r=await fetch(m.path+'?v=part4a',{cache:'no-store'});
+ var r=await fetch(m.path+'?v=part4b',{cache:'no-store'});
  if(!r.ok)throw Error('No se pudo cargar '+name+' (HTTP '+r.status+')');
  var buffer=await r.arrayBuffer();
  var a=typedArrayFromBuffer(buffer,m.dtype);
@@ -2071,7 +2071,59 @@ function traceShared(startIds,dir,m){var paths=[];startIds.forEach(id=>{var p=tr
 function pythonRound(x){var f=Math.floor(x),r=x-f;if(r<.5)return f;if(r>.5)return f+1;return (f%2===0)?f:f+1}
 function createValley(core,startIds,acc,flowM,accM){var vals=[];core.forEach(id=>{var v=acc[id];if(Number.isFinite(v)&&v>0)vals.push(v)});if(!vals.length){var ex=new Set(core);core.forEach(id=>{var r=Math.floor(id/flowM.width),c=id-r*flowM.width;for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++)if(validCell(r+dr,c+dc,flowM))ex.add((r+dr)*flowM.width+c+dc)});return ex}var amin=Math.min(...vals),amax=Math.max(...vals),lmin=Math.log1p(amin),lmax=Math.log1p(amax),out=new Set(core);startIds.forEach(id=>out.add(id));core.forEach(id=>{var v=acc[id],rad=1;if(Number.isFinite(v)&&v>0&&lmax>lmin){var norm=(Math.log1p(v)-lmin)/(lmax-lmin);norm=Math.max(0,Math.min(1,norm));rad=pythonRound(1+norm*2);rad=Math.max(1,Math.min(3,rad))}var r=Math.floor(id/flowM.width),c=id-r*flowM.width;for(var dr=-rad;dr<=rad;dr++)for(var dc=-rad;dc<=rad;dc++){if(dr*dr+dc*dc>rad*rad)continue;var nr=r+dr,nc=c+dc;if(validCell(nr,nc,flowM))out.add(nr*flowM.width+nc)}});return out}
 function waterIdsForAffected(flowIds,flowM,waterM){var s=new Set(),fa=flowM.transform[0],fe=flowM.transform[4],fx=flowM.transform[2],fy=flowM.transform[5];flowIds.forEach(id=>{var r=Math.floor(id/flowM.width),c=id-r*flowM.width,x1=fx+fa*c,x2=x1+fa,y2=fy+fe*r,y1=y2+fe;var b=[Math.min(x1,x2),Math.min(y1,y2),Math.max(x1,x2),Math.max(y1,y2)];rasterPixelIdsForBounds(b,waterM,s)});return s}
-function renderAffected(flowIds,m,d,sign){clearSimulationAffected();var rows=new Map();flowIds.forEach(id=>{var r=Math.floor(id/m.width),c=id-r*m.width;if(!rows.has(r))rows.set(r,[]);rows.get(r).push(c)});var zone=simulationDistrictInfo[d].zone,parts=[],a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];rows.forEach((cols,r)=>{cols.sort((x,y)=>x-y);var start=cols[0],prev=cols[0];function add(s,p){var xl=x0+a*s,xr=x0+a*(p+1),yt=y0+e*r,yb=y0+e*(r+1),ll1=utmToLatLon(xl,yb,zone),ll2=utmToLatLon(xr,yt,zone),bb=[[ll1[0],ll1[1]],[ll2[0],ll2[1]]];parts.push(L.rectangle(bb,{color:'#222',weight:3,opacity:.85,fill:false,interactive:false}));parts.push(L.rectangle(bb,{color:'#ff9d00',weight:1.5,opacity:1,dashArray:'5,3',fillColor:sign>0?'#32b450':sign<0?'#e6463c':'#e6be28',fillOpacity:.15,interactive:false}))}for(var i=1;i<cols.length;i++){if(cols[i]===prev+1)prev=cols[i];else{add(start,prev);start=prev=cols[i]}}add(start,prev)});simulationAffectedLayer=L.layerGroup(parts).addTo(map);}
+
+// ===== Part 4b: unified 100 m result display grid =====
+// Numerical calculations stay on their original raster pixels.
+// Only result drawing is snapped to the same 100 m grid as the selection grid.
+function simulationDisplayGridInfo(d){
+  if(!simulationGridLayer)return null;
+  var xmin=Infinity,ymax=-Infinity;
+  simulationGridLayer.eachLayer(function(layer){
+    if(!layer.feature)return;
+    var b=featureUtmBounds(layer.feature,d);
+    xmin=Math.min(xmin,b[0]);
+    ymax=Math.max(ymax,b[3]);
+  });
+  if(!Number.isFinite(xmin)||!Number.isFinite(ymax))return null;
+  return {xmin:xmin,ymax:ymax,zone:simulationDistrictInfo[d].zone,size:100};
+}
+function snapUtmPointToSimulationCell(x,y,d){
+  var g=simulationDisplayGridInfo(d);
+  if(!g)return null;
+  var col=Math.floor((x-g.xmin)/g.size);
+  var row=Math.floor((g.ymax-y)/g.size);
+  var x0=g.xmin+col*g.size;
+  var y1=g.ymax-row*g.size;
+  return {key:col+','+row,x0:x0,y0:y1-g.size,x1:x0+g.size,y1:y1,zone:g.zone};
+}
+function displayCellLatLngBounds(cell){
+  var p1=utmToLatLon(cell.x0,cell.y0,cell.zone);
+  var p2=utmToLatLon(cell.x1,cell.y1,cell.zone);
+  return [[Math.min(p1[0],p2[0]),Math.min(p1[1],p2[1])],
+          [Math.max(p1[0],p2[0]),Math.max(p1[1],p2[1])]];
+}
+
+function renderAffected(flowIds,m,d,sign){
+ clearSimulationAffected();
+ var cells=new Map(),a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];
+ flowIds.forEach(function(id){
+   var r=Math.floor(id/m.width),c=id-r*m.width;
+   var x=x0+a*(c+.5),y=y0+e*(r+.5);
+   var cell=snapUtmPointToSimulationCell(x,y,d);
+   if(cell)cells.set(cell.key,cell);
+ });
+ var parts=[];
+ cells.forEach(function(cell){
+   var bb=displayCellLatLngBounds(cell);
+   parts.push(L.rectangle(bb,{color:'#222',weight:3,opacity:.85,fill:false,interactive:false}));
+   parts.push(L.rectangle(bb,{
+     color:'#ff9d00',weight:1.5,opacity:1,dashArray:'5,3',
+     fillColor:sign>0?'#32b450':sign<0?'#e6463c':'#e6be28',
+     fillOpacity:.15,interactive:false
+   }));
+ });
+ simulationAffectedLayer=L.layerGroup(parts).addTo(map);
+}
 function fmt(v,n){return Number(v).toLocaleString('es-PE',{minimumFractionDigits:n,maximumFractionDigits:n})}
 async function runWaterSimulation(){if(!selectedSimulationWatershed){alert('Seleccione primero una microcuenca.');return}if(!selectedSimulationCells.size){alert('Seleccione al menos una cuadrícula de 100 m.');return}clearSimulationAffected();var st=document.getElementById('simStatus');st.textContent='Calculando recursos hídricos…';try{var d=simDistrict(),code=parseInt(document.getElementById('simChangeTo').value,10),suffix=({1:'nf',6:'pl',8:'sf',9:'ot',14:'ot'})[code];if(!suffix)throw Error('Uso futuro no compatible');var meta=await loadRasterMeta(d);var curM=meta.rasters.current,futM=meta.rasters[suffix],flowM=meta.rasters.flow_direction,accM=meta.rasters.flow_accumulation;var arrays=await Promise.all([loadRasterArray(d,'current',meta),loadRasterArray(d,suffix,meta),loadRasterArray(d,'flow_direction',meta),loadRasterArray(d,'flow_accumulation',meta)]),cur=arrays[0],fut=arrays[1],dir=arrays[2],acc=arrays[3];var curIds=selectedPixelIds(curM,d),futIds=selectedPixelIds(futM,d),cs=rasterStatsFromIds(cur,curM,curIds),fs=rasterStatsFromIds(fut,futM,futIds),diff=fs.volume_m3_month-cs.volume_m3_month,pct=cs.volume_m3_month!==0?diff/cs.volume_m3_month*100:null;st.textContent='Trazando el área potencialmente afectada…';var starts=startingFlowCells(meta,d),core=traceShared(starts,dir,flowM),affected=createValley(core,starts,acc,flowM,accM);if(!affected.size)throw Error('No se pudo obtener el área afectada');var affectedWaterIds=waterIdsForAffected(affected,flowM,curM),as=rasterStatsFromIds(cur,curM,affectedWaterIds),affectedArea=affected.size*flowM.pixelAreaM2/10000,impact=as.volume_m3_month!==0?diff/as.volume_m3_month*100:null;renderAffected(affected,flowM,d,diff);var changeName=document.getElementById('simChangeTo').selectedOptions[0].textContent,desc=diff>0?'Aumento':diff<0?'Disminución':'Sin cambio',color=diff>0?'#1b7f3a':diff<0?'#b42318':'#8a6d00',area=selectedSimulationCells.size;var box=document.getElementById('simResult');box.innerHTML='<b>Resultado de la simulación de recursos hídricos</b><table><tr><td>Cambio de uso propuesto:</td><td>'+changeName+'</td></tr><tr><td>Área modificada:</td><td>'+fmt(area,2)+' ha</td></tr><tr><td>Disponibilidad hídrica antes:</td><td>'+fmt(cs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Disponibilidad hídrica después:</td><td>'+fmt(fs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>'+desc+':</td><td style="color:'+color+'">'+(diff>=0?'+':'')+fmt(diff,2)+' m³/mes</td></tr><tr><td>Cambio en el área modificada:</td><td>'+(pct===null?'No calculable':(pct>=0?'+':'')+fmt(pct,2)+' %')+'</td></tr><tr><td colspan="2"><hr></td></tr><tr><td>Área potencialmente afectada:</td><td>'+fmt(affectedArea,2)+' ha</td></tr><tr><td>Disponibilidad hídrica actual en el área afectada:</td><td>'+fmt(as.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Impacto relativo sobre el área afectada:</td><td>'+(impact===null?'No calculable':(impact>=0?'+':'')+fmt(impact,2)+' %')+'</td></tr></table><div style="margin-top:6px;font-style:italic">El impacto relativo compara el cambio estimado en el área modificada con el volumen actual de disponibilidad hídrica del área potencialmente afectada.</div>';box.classList.add('open');st.textContent='Simulación completada.';}catch(e){console.error(e);st.textContent='Error: '+e.message;}}
 
@@ -2081,7 +2133,48 @@ function expandFireArea(core,start,m,radius){var seed=new Set(core);start.forEac
 function fireIdsInsideAffected(fireM,flowM,affected,d){var zf=fireM.zone||simulationDistrictInfo[d].zone,zflow=simulationDistrictInfo[d].zone,out=[],a=fireM.transform[0],e=fireM.transform[4],x0=fireM.transform[2],y0=fireM.transform[5];for(var r=0;r<fireM.height;r++)for(var c=0;c<fireM.width;c++){var id=r*fireM.width+c,xf=x0+a*(c+.5),yf=y0+e*(r+.5),ll=utmToLatLon(xf,yf,zf),u=latLonToUtm(ll[0],ll[1],zflow),fa=flowM.transform[0],fe=flowM.transform[4],fx=flowM.transform[2],fy=flowM.transform[5],fc=Math.floor((u[0]-fx)/fa),fr=Math.floor((fy-u[1])/(-fe));if(validCell(fr,fc,flowM)&&affected.has(fr*flowM.width+fc))out.push(id)}return out}
 function fireStats(arr,m,ids,rule){var cc=[0,0,0,0,0,0],fc=[0,0,0,0,0,0],sum=0,sumf=0,chg=0,n=0,nd=m.nodata;ids.forEach(id=>{var v=arr[id];if(!Number.isFinite(v)||(nd!==null&&v===nd))return;v=Math.round(v);if(v<1||v>5)return;var f=Math.max(1,Math.min(5,v+rule));cc[v]++;fc[f]++;sum+=v;sumf+=f;n++;if(f!==v)chg++});var pa=m.pixelAreaM2,cm=n?sum/n:0,fm=n?sumf/n:0;return {currentMean:cm,futureMean:fm,difference:fm-cm,percent:cm!==0?(fm-cm)/cm*100:null,changedPixels:chg,changedArea:chg*pa/10000,currentAreas:cc.map(x=>x*pa/10000),futureAreas:fc.map(x=>x*pa/10000)}}
 function riskColor(v){return ({1:'#3195e8',2:'#aeee97',3:'#ffffbf',4:'#f5ad58',5:'#d62125'})[v]||'#888'}
-function renderFirePixels(ids,arr,m,d,rule,after){clearSimulationAffected();var z=m.zone||simulationDistrictInfo[d].zone,parts=[],a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];ids.forEach(id=>{var v=arr[id];if(!Number.isFinite(v)||(m.nodata!==null&&v===m.nodata))return;v=Math.round(v);if(v<1||v>5)return;var cls=after?Math.max(1,Math.min(5,v+rule)):v,r=Math.floor(id/m.width),c=id-r*m.width,xl=x0+a*c,xr=x0+a*(c+1),yt=y0+e*r,yb=y0+e*(r+1),ll1=utmToLatLon(xl,yb,z),ll2=utmToLatLon(xr,yt,z);parts.push(L.rectangle([[ll1[0],ll1[1]],[ll2[0],ll2[1]]],{color:'#333',weight:.45,fillColor:riskColor(cls),fillOpacity:.72,interactive:false}))});simulationAffectedLayer=L.layerGroup(parts).addTo(map)}
+function renderFirePixels(ids,arr,m,d,rule,after){
+ clearSimulationAffected();
+ var sourceZone=m.zone||simulationDistrictInfo[d].zone;
+ var districtZone=simulationDistrictInfo[d].zone;
+ var a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];
+ var agg=new Map();
+
+ ids.forEach(function(id){
+   var v=arr[id];
+   if(!Number.isFinite(v)||(m.nodata!==null&&v===m.nodata))return;
+   v=Math.round(v);
+   if(v<1||v>5)return;
+   var cls=after?Math.max(1,Math.min(5,v+rule)):v;
+   var r=Math.floor(id/m.width),c=id-r*m.width;
+   var xs=x0+a*(c+.5),ys=y0+e*(r+.5);
+
+   var xd=xs,yd=ys;
+   if(sourceZone!==districtZone){
+     var ll=utmToLatLon(xs,ys,sourceZone);
+     var u=latLonToUtm(ll[0],ll[1],districtZone);
+     xd=u[0];yd=u[1];
+   }
+
+   var cell=snapUtmPointToSimulationCell(xd,yd,d);
+   if(!cell)return;
+   var item=agg.get(cell.key);
+   if(!item){item={cell:cell,counts:[0,0,0,0,0,0]};agg.set(cell.key,item);}
+   item.counts[cls]++;
+ });
+
+ var parts=[];
+ agg.forEach(function(item){
+   var best=1,bestN=-1;
+   for(var k=1;k<=5;k++){
+     if(item.counts[k]>bestN){bestN=item.counts[k];best=k;}
+   }
+   parts.push(L.rectangle(displayCellLatLngBounds(item.cell),{
+     color:'#333',weight:.65,fillColor:riskColor(best),fillOpacity:.72,interactive:false
+   }));
+ });
+ simulationAffectedLayer=L.layerGroup(parts).addTo(map);
+}
 var lastFireDisplay=null;
 function setFireComparison(after){if(!lastFireDisplay)return;renderFirePixels(lastFireDisplay.ids,lastFireDisplay.arr,lastFireDisplay.meta,lastFireDisplay.d,lastFireDisplay.rule,after);document.querySelectorAll('.sim-compare button').forEach(b=>b.classList.remove('active'));var el=document.getElementById(after?'simFireAfter':'simFireCurrent');if(el)el.classList.add('active')}
 async function runFireSimulation(){if(!selectedSimulationWatershed){alert('Seleccione primero una microcuenca.');return}if(!selectedSimulationCells.size){alert('Seleccione al menos una cuadrícula de 100 m.');return}clearSimulationAffected();var st=document.getElementById('simStatus');st.textContent='Calculando riesgo de incendio…';try{var d=simDistrict(),code=parseInt(document.getElementById('simChangeTo').value,10),rule=({1:-1,6:0,8:0,9:1,14:1})[code];if(rule===undefined)throw Error('Regla de riesgo no disponible');var meta=await loadRasterMeta(d),flowM=meta.rasters.flow_direction,fireM=meta.rasters.fire_risk,arrs=await Promise.all([loadRasterArray(d,'flow_direction',meta),loadRasterArray(d,'fire_risk',meta)]),dir=arrs[0],fire=arrs[1],starts=startingFlowCells(meta,d),up=traceUpstream(starts,dir,flowM,30),affected=expandFireArea(up,starts,flowM,1);if(!affected.size)throw Error('No se pudo obtener el área afectada');var ids=fireIdsInsideAffected(fireM,flowM,affected,d),s=fireStats(fire,fireM,ids,rule),area=affected.size*flowM.pixelAreaM2/10000;lastFireDisplay={ids:ids,arr:fire,meta:fireM,d:d,rule:rule};renderFirePixels(ids,fire,fireM,d,rule,true);var lab=['','Muy bajo','Bajo','Moderado','Alto','Muy alto'],rows='';for(var k=1;k<=5;k++)rows+='<tr><td>'+k+' — '+lab[k]+'</td><td>'+fmt(s.currentAreas[k],2)+' ha</td><td>'+fmt(s.futureAreas[k],2)+' ha</td></tr>';var nm=document.getElementById('simChangeTo').selectedOptions[0].textContent,desc=s.difference<0?'Disminución del riesgo':s.difference>0?'Aumento del riesgo':'Sin cambio',col=s.difference<0?'#1b7f3a':s.difference>0?'#b42318':'#8a6d00',box=document.getElementById('simResult');box.innerHTML='<b>Resultado de la simulación de riesgo de incendio</b><table><tr><td>Cambio de uso propuesto:</td><td>'+nm+'</td></tr><tr><td>Regla aplicada:</td><td>'+(rule>=0?'+':'')+rule+' clase</td></tr><tr><td>Área potencialmente afectada:</td><td>'+fmt(area,2)+' ha</td></tr><tr><td>Píxeles con cambio efectivo:</td><td>'+s.changedPixels.toLocaleString('es-PE')+'</td></tr><tr><td>Área con cambio efectivo:</td><td>'+fmt(s.changedArea,2)+' ha</td></tr><tr><td>Riesgo medio actual:</td><td>'+fmt(s.currentMean,2)+'</td></tr><tr><td>Riesgo medio después:</td><td>'+fmt(s.futureMean,2)+'</td></tr><tr><td>'+desc+':</td><td style="color:'+col+'">'+(s.difference>=0?'+':'')+fmt(s.difference,2)+'</td></tr><tr><td>Cambio relativo:</td><td style="color:'+col+'">'+(s.percent===null?'No calculable':(s.percent>=0?'+':'')+fmt(s.percent,2)+' %')+'</td></tr></table><div class="sim-compare"><button id="simFireCurrent" onclick="setFireComparison(false)">Riesgo actual</button><button id="simFireAfter" class="active" onclick="setFireComparison(true)">Después del cambio</button></div><table class="sim-fire-table"><tr><th>Clase de riesgo</th><th>Área actual</th><th>Área futura</th></tr>'+rows+'</table><div style="margin-top:6px;font-style:italic">Las clases se mantienen entre 1 y 5. El área con cambio efectivo se calcula usando el tamaño real de los píxeles del raster.</div>';box.classList.add('open');st.textContent='Simulación completada.'}catch(e){console.error(e);st.textContent='Error: '+e.message}}
@@ -2343,7 +2436,7 @@ if ('serviceWorker' in navigator){
    window.addEventListener('load', function(){
 
       navigator.serviceWorker
-         .register('./service-worker.js?v=20260830_part4a', {updateViaCache:'none'})
+         .register('./service-worker.js?v=20260830_part4b', {updateViaCache:'none'})
 
          .then(function(registration){
 
