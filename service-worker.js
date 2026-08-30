@@ -1,5 +1,5 @@
-const CACHE_NAME = 'ceforaa-tablet-part4b-grid-display-v1';
-const PRECACHE_URLS = [
+const CACHE_NAME='ceforaa-tablet-part4c-stable-v1';
+const PRECACHE_URLS=[
   "./Huanipaca.geojson",
   "./Huanipaca_degradation.png",
   "./Huanipaca_dem_relief.jpg",
@@ -1214,6 +1214,62 @@ const PRECACHE_URLS = [
   "./visualization_dialog.py"
 ];
 
-self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{for(const url of PRECACHE_URLS){try{await cache.add(new Request(url,{cache:'reload'}));}catch(e){console.warn('Precache failed:',url,e);}}}))});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>k===CACHE_NAME?null:caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;event.respondWith(caches.match(event.request,{ignoreSearch:true}).then(cached=>{if(cached)return cached;return fetch(event.request).then(resp=>{if(resp&&resp.ok){const copy=resp.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));}return resp;}).catch(()=>{if(event.request.mode==='navigate')return caches.match('./index.html',{ignoreSearch:true});return new Response('',{status:504,statusText:'Offline'});});}))});
+self.addEventListener('install',event=>{
+  self.skipWaiting();
+  event.waitUntil((async()=>{
+    const target=await caches.open(CACHE_NAME);
+    const oldKeys=(await caches.keys()).filter(k=>k!==CACHE_NAME&&k.startsWith('ceforaa-tablet-'));
+    // Reuse the already downloaded offline files instead of downloading ~100 MB again.
+    for(const key of oldKeys){
+      const old=await caches.open(key);
+      const reqs=await old.keys();
+      for(const req of reqs){
+        if(!(await target.match(req))) {
+          const resp=await old.match(req);
+          if(resp) await target.put(req,resp);
+        }
+      }
+    }
+    // Always refresh the app shell.
+    for(const url of ['./index.html','./manifest.webmanifest','./leaflet.js','./leaflet.css']){
+      try{await target.add(new Request(url,{cache:'reload'}));}catch(e){}
+    }
+    // On a fresh install, fill the full offline cache.
+    const sentinel=await target.match('./Huanipaca_satellite.jpg',{ignoreSearch:true});
+    if(!sentinel){
+      for(const url of PRECACHE_URLS){
+        try{await target.add(new Request(url,{cache:'reload'}));}catch(e){console.warn('Precache failed:',url,e);}
+      }
+    }
+  })());
+});
+
+self.addEventListener('activate',event=>{
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.map(k=>k===CACHE_NAME?null:(k.startsWith('ceforaa-tablet-')?caches.delete(k):null)));
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET')return;
+  const req=event.request;
+  const url=new URL(req.url);
+  const isAppShell=req.mode==='navigate'||url.pathname.endsWith('/index.html');
+  if(isAppShell){
+    event.respondWith(
+      fetch(req).then(resp=>{
+        if(resp&&resp.ok) caches.open(CACHE_NAME).then(c=>c.put('./index.html',resp.clone()));
+        return resp;
+      }).catch(()=>caches.match('./index.html',{ignoreSearch:true}))
+    );
+    return;
+  }
+  event.respondWith(
+    caches.match(req,{ignoreSearch:true}).then(cached=>cached||fetch(req).then(resp=>{
+      if(resp&&resp.ok)caches.open(CACHE_NAME).then(c=>c.put(req,resp.clone()));
+      return resp;
+    }).catch(()=>new Response('',{status:504,statusText:'Offline'})))
+  );
+});

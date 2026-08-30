@@ -698,7 +698,7 @@ Borrar Incendios
 <button class="sim-clear" onclick="clearSimulationSelection()">Borrar selección</button>
 <div id="simResult" class="sim-result"></div>
 <div class="sim-note">Part 3-3: Recursos hídricos y Riesgo de incendio funcionan en los 3 distritos. Se añadió Relieve DEM como mapa base. La cobertura actual del suelo por cuadrícula está disponible en los 3 distritos.</div>
-<div class="sim-version">Tablet Part 4b / Grid display unified / 3 distritos / 2026-08-30</div>
+<div class="sim-version">Tablet Part 4c / Stable grid + tab cleanup / 3 distritos / 2026-08-30</div>
 <div class="install-status" id="installStatus">
   Estado PWA: comprobando…
   <div class="install-actions">
@@ -712,7 +712,7 @@ Borrar Incendios
 
 <div id="map"></div>
 
-<script src="data/simulation/fire_risk_embedded.js?v=part4b"></script>
+<script src="data/simulation/fire_risk_embedded.js?v=part4c"></script>
 <script>
 
 // ================= Mapa =================
@@ -751,6 +751,7 @@ var statisticsDataPaths = {
 
 
 var simulationWatershedLayer=null, simulationGridLayer=null, simulationAffectedLayer=null, selectedSimulationWatershed=null;
+var currentAppMode='visualization', simulationLoadGeneration=0, areaLoadGeneration=0;
 var selectedSimulationCells=new Map(), simulationLookup={}, simulationUtmCache={}, simulationRasterCache={};
 var simulationWatershedPaths={
  'Huanipaca':{'2km2':'data/basin_Huanipaca_2km2.geojson','10km2':'data/basin_Huanipaca_10km2.geojson'},
@@ -758,7 +759,7 @@ var simulationWatershedPaths={
  'SJO':{'2km2':'data/basin_SJO_2km2.geojson','10km2':'data/basin_SJO_10km2.geojson'}
 };
 var simulationDistrictInfo={'Huanipaca':{zone:18},'Yanatile':{zone:18},'SJO':{zone:19}};
-fetch('data/simulation/landuse_lookup.json?v=part4b',{cache:'no-store'}).then(r=>r.json()).then(d=>simulationLookup=d).catch(()=>simulationLookup={});
+fetch('data/simulation/landuse_lookup.json?v=part4c',{cache:'no-store'}).then(r=>r.json()).then(d=>simulationLookup=d).catch(()=>simulationLookup={});
 
 // ================= Mapa base =================
 
@@ -1049,6 +1050,7 @@ function updateLabelColor(isSatellite){
 function showArea(area){
 
   currentArea = area;
+  var areaRequestId=++areaLoadGeneration;
 
   clearFires();
 
@@ -1258,6 +1260,7 @@ overlayControl = L.control.layers(
 
   .then(function(geojson){
 
+    if(areaRequestId!==areaLoadGeneration || area!==currentArea)return;
     boundaryLayer = L.geoJSON(
 
       geojson,
@@ -1901,6 +1904,8 @@ document
 // ================= Tablet/PWA: cambio de función =================
 
 function setAppMode(mode){
+   currentAppMode=mode;
+   if(mode!=='simulation') simulationLoadGeneration++;
 
    var panel = document.getElementById('modePanel');
    var statsPanel = document.getElementById('statisticsPanel');
@@ -1960,23 +1965,39 @@ function setAppMode(mode){
 function simulationWatershedStyle(){return {color:'#00bcd4',weight:1.2,dashArray:'5,4',fillColor:'#fff',fillOpacity:.02};}
 function simDistrict(){return document.getElementById('simDistrict').value;}
 function clearSimulationAffected(){if(simulationAffectedLayer){map.removeLayer(simulationAffectedLayer);simulationAffectedLayer=null;}document.getElementById('simResult').classList.remove('open');document.getElementById('simResult').innerHTML='';}
-function clearSimulationLayers(){clearSimulationAffected();if(simulationGridLayer){map.removeLayer(simulationGridLayer);simulationGridLayer=null}if(simulationWatershedLayer){map.removeLayer(simulationWatershedLayer);simulationWatershedLayer=null}selectedSimulationWatershed=null;selectedSimulationCells.clear()}
+function clearSimulationLayers(){simulationLoadGeneration++;clearSimulationAffected();if(simulationGridLayer){map.removeLayer(simulationGridLayer);simulationGridLayer=null}if(simulationWatershedLayer){map.removeLayer(simulationWatershedLayer);simulationWatershedLayer=null}selectedSimulationWatershed=null;selectedSimulationCells.clear()}
 function changeSimulationDistrict(){clearSimulationLayers();var d=simDistrict();showArea(d);loadSimulationWatersheds(document.getElementById('simUnit').value);}
 function changeSimulationUnit(){clearSimulationLayers();loadSimulationWatersheds(document.getElementById('simUnit').value)}
 function loadSimulationWatersheds(unit){
- clearSimulationLayers(); var d=simDistrict(); document.getElementById('simWatershedSelected').textContent='Ninguna microcuenca seleccionada';
- document.getElementById('simGridSummary').textContent='Seleccione una microcuenca para crear la cuadrícula.'; document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';
+ clearSimulationLayers();
+ var requestId=simulationLoadGeneration;
+ var d=simDistrict();
+ document.getElementById('simWatershedSelected').textContent='Ninguna microcuenca seleccionada';
+ document.getElementById('simGridSummary').textContent='Seleccione una microcuenca para crear la cuadrícula.';
+ document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';
  document.getElementById('simStatus').textContent='';
- fetch(simulationWatershedPaths[d][unit]+'?v=part4b',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No se pudo cargar la microcuenca');return r.json()}).then(data=>{
-  simulationWatershedLayer=L.geoJSON(data,{style:simulationWatershedStyle,onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);selectSimulationWatershed(f,l,unit)})}).addTo(map);
-  if(simulationWatershedLayer.getBounds().isValid())map.fitBounds(simulationWatershedLayer.getBounds(),{padding:[12,12]});
- }).catch(e=>document.getElementById('simGridSummary').textContent=e.message)
+ fetch(simulationWatershedPaths[d][unit]+'?v=part4c',{cache:'no-store'})
+ .then(r=>{if(!r.ok)throw Error('No se pudo cargar la microcuenca');return r.json()})
+ .then(data=>{
+   if(currentAppMode!=='simulation'||requestId!==simulationLoadGeneration||d!==simDistrict())return;
+   simulationWatershedLayer=L.geoJSON(data,{
+     style:simulationWatershedStyle,
+     onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);selectSimulationWatershed(f,l,unit)})
+   }).addTo(map);
+   if(simulationWatershedLayer.getBounds().isValid())map.fitBounds(simulationWatershedLayer.getBounds(),{padding:[12,12]});
+ })
+ .catch(e=>{
+   if(currentAppMode==='simulation'&&requestId===simulationLoadGeneration)
+     document.getElementById('simGridSummary').textContent=e.message;
+ });
 }
-async function getUtmWatersheds(d,unit){var key=d+'_'+unit;if(simulationUtmCache[key])return simulationUtmCache[key];var p='data/simulation/watershed_utm/'+key+'.json?v=part4b';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la geometría UTM');var j=await r.json();simulationUtmCache[key]=j;return j;}
+async function getUtmWatersheds(d,unit){var key=d+'_'+unit;if(simulationUtmCache[key])return simulationUtmCache[key];var p='data/simulation/watershed_utm/'+key+'.json?v=part4c';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la geometría UTM');var j=await r.json();simulationUtmCache[key]=j;return j;}
 async function selectSimulationWatershed(f,l,unit){
+ var requestId=simulationLoadGeneration;
+ if(currentAppMode!=='simulation')return;
  clearSimulationAffected(); simulationWatershedLayer.eachLayer(x=>simulationWatershedLayer.resetStyle(x));l.setStyle({color:'#ff8c00',weight:3,fillOpacity:.04});if(l.bringToFront)l.bringToFront();
  selectedSimulationWatershed=f;selectedSimulationCells.clear();document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';var dn=f.properties.DN,simid=(simDistrict()==='Huanipaca'?dn:f.properties.SIM_ID);
- document.getElementById('simWatershedSelected').textContent='Microcuenca seleccionada: '+dn;await loadSimulationGrid(unit,simid,dn)
+ document.getElementById('simWatershedSelected').textContent='Microcuenca seleccionada: '+dn;await loadSimulationGrid(unit,simid,dn,requestId)
 }
 function parseCellLC(t){let o={};if(!t)return o;String(t).split(',').forEach(p=>{let a=p.split(':');if(a.length===2){let c=parseInt(a[0],10),v=parseFloat(a[1]);if(Number.isFinite(c)&&Number.isFinite(v))o[c]=v}});return o}
 function simGridStyle(f){let s=selectedSimulationCells.has(f.properties.Cell_ID);return {color:s?'#f00':'#777',weight:s?1.4:.65,fillColor:s?'#f00':'#fff',fillOpacity:s?.50:.06}}
@@ -1992,9 +2013,10 @@ function geomBounds(g){var b=[Infinity,Infinity,-Infinity,-Infinity];function wa
 function dynamicGridFeature(x0,y0,zone,id){var ll1=utmToLatLon(x0,y0,zone),ll2=utmToLatLon(x0+100,y0,zone),ll3=utmToLatLon(x0+100,y0+100,zone),ll4=utmToLatLon(x0,y0+100,zone);return {type:'Feature',properties:{Cell_ID:id,Area_ha:1.0,LC:'',XMIN:x0,YMIN:y0,XMAX:x0+100,YMAX:y0+100},geometry:{type:'Polygon',coordinates:[[[ll1[1],ll1[0]],[ll2[1],ll2[0]],[ll3[1],ll3[0]],[ll4[1],ll4[0]],[ll1[1],ll1[0]]]]}}}
 async function buildDynamicGrid(d,unit,simid){var u=await getUtmWatersheds(d,unit),g=u.features[String(simid)];if(!g)throw Error('No se encontró la microcuenca UTM');var b=geomBounds(g),features=[],id=1;var xmin=b[0],ymax=b[3];for(var x=xmin;x<b[2];x+=100){for(var top=ymax;top>b[1];top-=100){var y=top-100,cx=x+50,cy=y+50;if(pointInUtmGeometry(cx,cy,g))features.push(dynamicGridFeature(x,y,simulationDistrictInfo[d].zone,id++));}}return {type:'FeatureCollection',features:features}}
 function featureUtmBounds(f,d){var p=f.properties;if(Number.isFinite(Number(p.XMIN)))return [Number(p.XMIN),Number(p.YMIN),Number(p.XMAX),Number(p.YMAX)];var zone=simulationDistrictInfo[d].zone,coords=f.geometry.coordinates[0],xs=[],ys=[];coords.forEach(c=>{var u=latLonToUtm(c[1],c[0],zone);xs.push(u[0]);ys.push(u[1])});return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]}
-async function loadSimulationGrid(unit,simid,dn){
+async function loadSimulationGrid(unit,simid,dn,requestId){
  if(simulationGridLayer)map.removeLayer(simulationGridLayer);clearSimulationAffected();selectedSimulationCells.clear();var d=simDistrict();document.getElementById('simGridSummary').textContent='Creando / cargando cuadrícula de 100 m…';
- try{var data;if(d==='Huanipaca'){var p='data/simulation/Huanipaca/'+unit+'/'+dn+'.geojson?v=part4ba';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la cuadrícula');data=await r.json();}else{data=await buildDynamicGrid(d,unit,simid);var lcr=await fetch('data/simulation/landcover_grid/'+d+'/'+unit+'/'+simid+'.json?v=part4ba',{cache:'no-store'});if(!lcr.ok)throw Error('No se pudo cargar la cobertura terrestre de la cuadrícula');var lcmap=await lcr.json();data.features.forEach(function(f){f.properties.LC=lcmap[String(f.properties.Cell_ID)]||'';});}
+ try{var data;if(d==='Huanipaca'){var p='data/simulation/Huanipaca/'+unit+'/'+dn+'.geojson?v=part4ca';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la cuadrícula');data=await r.json();}else{data=await buildDynamicGrid(d,unit,simid);var lcr=await fetch('data/simulation/landcover_grid/'+d+'/'+unit+'/'+simid+'.json?v=part4ca',{cache:'no-store'});if(!lcr.ok)throw Error('No se pudo cargar la cobertura terrestre de la cuadrícula');var lcmap=await lcr.json();data.features.forEach(function(f){f.properties.LC=lcmap[String(f.properties.Cell_ID)]||'';});}
+ if(currentAppMode!=='simulation'||requestId!==simulationLoadGeneration)return;
  simulationGridLayer=L.geoJSON(data,{style:simGridStyle,onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);toggleSimulationCell(f,l)})}).addTo(map);if(simulationGridLayer.getBounds().isValid())map.fitBounds(simulationGridLayer.getBounds(),{padding:[20,20]});updateSimulationSummary(data.features.length)}catch(e){document.getElementById('simGridSummary').textContent=e.message}
 }
 function toggleSimulationCell(f,l){clearSimulationAffected();let id=f.properties.Cell_ID;if(selectedSimulationCells.has(id))selectedSimulationCells.delete(id);else selectedSimulationCells.set(id,f);l.setStyle(simGridStyle(f));updateSimulationSummary();updateSimulationCurrentLC()}
@@ -2003,7 +2025,7 @@ function updateSimulationCurrentLC(){let b=document.getElementById('simCurrentLC
 function clearSimulationSelection(){clearSimulationAffected();selectedSimulationCells.clear();if(simulationGridLayer)simulationGridLayer.eachLayer(l=>l.setStyle(simGridStyle(l.feature)));updateSimulationSummary();updateSimulationCurrentLC();document.getElementById('simStatus').textContent=''}
 
 function typedArrayFromBuffer(buf,dtype){if(dtype==='float32')return new Float32Array(buf);if(dtype==='float64')return new Float64Array(buf);if(dtype==='int16')return new Int16Array(buf);if(dtype==='uint8')return new Uint8Array(buf);throw Error('Tipo de raster no soportado')}
-async function loadRasterMeta(d){var k=d+'_meta';if(simulationRasterCache[k])return simulationRasterCache[k];var r=await fetch('data/simulation/rasters/'+d+'/meta.json?v=part4b',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar metadatos raster');var j=await r.json();simulationRasterCache[k]=j;return j}
+async function loadRasterMeta(d){var k=d+'_meta';if(simulationRasterCache[k])return simulationRasterCache[k];var r=await fetch('data/simulation/rasters/'+d+'/meta.json?v=part4c',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar metadatos raster');var j=await r.json();simulationRasterCache[k]=j;return j}
 function decodeEmbeddedUint8(base64Text){
  var binary=atob(base64Text),n=binary.length,a=new Uint8Array(n);
  for(var i=0;i<n;i++)a[i]=binary.charCodeAt(i);
@@ -2028,7 +2050,7 @@ async function loadRasterArray(d,name,meta){
    return fireArray;
  }
 
- var r=await fetch(m.path+'?v=part4b',{cache:'no-store'});
+ var r=await fetch(m.path+'?v=part4c',{cache:'no-store'});
  if(!r.ok)throw Error('No se pudo cargar '+name+' (HTTP '+r.status+')');
  var buffer=await r.arrayBuffer();
  var a=typedArrayFromBuffer(buffer,m.dtype);
@@ -2072,51 +2094,54 @@ function pythonRound(x){var f=Math.floor(x),r=x-f;if(r<.5)return f;if(r>.5)retur
 function createValley(core,startIds,acc,flowM,accM){var vals=[];core.forEach(id=>{var v=acc[id];if(Number.isFinite(v)&&v>0)vals.push(v)});if(!vals.length){var ex=new Set(core);core.forEach(id=>{var r=Math.floor(id/flowM.width),c=id-r*flowM.width;for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++)if(validCell(r+dr,c+dc,flowM))ex.add((r+dr)*flowM.width+c+dc)});return ex}var amin=Math.min(...vals),amax=Math.max(...vals),lmin=Math.log1p(amin),lmax=Math.log1p(amax),out=new Set(core);startIds.forEach(id=>out.add(id));core.forEach(id=>{var v=acc[id],rad=1;if(Number.isFinite(v)&&v>0&&lmax>lmin){var norm=(Math.log1p(v)-lmin)/(lmax-lmin);norm=Math.max(0,Math.min(1,norm));rad=pythonRound(1+norm*2);rad=Math.max(1,Math.min(3,rad))}var r=Math.floor(id/flowM.width),c=id-r*flowM.width;for(var dr=-rad;dr<=rad;dr++)for(var dc=-rad;dc<=rad;dc++){if(dr*dr+dc*dc>rad*rad)continue;var nr=r+dr,nc=c+dc;if(validCell(nr,nc,flowM))out.add(nr*flowM.width+nc)}});return out}
 function waterIdsForAffected(flowIds,flowM,waterM){var s=new Set(),fa=flowM.transform[0],fe=flowM.transform[4],fx=flowM.transform[2],fy=flowM.transform[5];flowIds.forEach(id=>{var r=Math.floor(id/flowM.width),c=id-r*flowM.width,x1=fx+fa*c,x2=x1+fa,y2=fy+fe*r,y1=y2+fe;var b=[Math.min(x1,x2),Math.min(y1,y2),Math.max(x1,x2),Math.max(y1,y2)];rasterPixelIdsForBounds(b,waterM,s)});return s}
 
-// ===== Part 4b: unified 100 m result display grid =====
-// Numerical calculations stay on their original raster pixels.
-// Only result drawing is snapped to the same 100 m grid as the selection grid.
-function simulationDisplayGridInfo(d){
+// ===== Part 4c: exact result-display alignment =====
+function getSimulationGridOrigin(d){
   if(!simulationGridLayer)return null;
   var xmin=Infinity,ymax=-Infinity;
   simulationGridLayer.eachLayer(function(layer){
     if(!layer.feature)return;
-    var b=featureUtmBounds(layer.feature,d);
-    xmin=Math.min(xmin,b[0]);
-    ymax=Math.max(ymax,b[3]);
+    var p=layer.feature.properties||{};
+    if(Number.isFinite(Number(p.XMIN))){
+      xmin=Math.min(xmin,Number(p.XMIN));
+      ymax=Math.max(ymax,Number(p.YMAX));
+    }else{
+      var b=featureUtmBounds(layer.feature,d);
+      xmin=Math.min(xmin,b[0]);
+      ymax=Math.max(ymax,b[3]);
+    }
   });
   if(!Number.isFinite(xmin)||!Number.isFinite(ymax))return null;
-  return {xmin:xmin,ymax:ymax,zone:simulationDistrictInfo[d].zone,size:100};
+  return {xmin:xmin,ymax:ymax,size:100,zone:simulationDistrictInfo[d].zone};
 }
-function snapUtmPointToSimulationCell(x,y,d){
-  var g=simulationDisplayGridInfo(d);
-  if(!g)return null;
+function snappedDisplayCell(x,y,g){
   var col=Math.floor((x-g.xmin)/g.size);
   var row=Math.floor((g.ymax-y)/g.size);
-  var x0=g.xmin+col*g.size;
-  var y1=g.ymax-row*g.size;
-  return {key:col+','+row,x0:x0,y0:y1-g.size,x1:x0+g.size,y1:y1,zone:g.zone};
+  var x0=g.xmin+col*g.size, y1=g.ymax-row*g.size;
+  return {key:col+','+row,x0:x0,y0:y1-g.size,x1:x0+g.size,y1:y1};
 }
-function displayCellLatLngBounds(cell){
-  var p1=utmToLatLon(cell.x0,cell.y0,cell.zone);
-  var p2=utmToLatLon(cell.x1,cell.y1,cell.zone);
-  return [[Math.min(p1[0],p2[0]),Math.min(p1[1],p2[1])],
-          [Math.max(p1[0],p2[0]),Math.max(p1[1],p2[1])]];
+function utmCellPolygon(cell,zone,style){
+  var p1=utmToLatLon(cell.x0,cell.y0,zone);
+  var p2=utmToLatLon(cell.x1,cell.y0,zone);
+  var p3=utmToLatLon(cell.x1,cell.y1,zone);
+  var p4=utmToLatLon(cell.x0,cell.y1,zone);
+  return L.polygon([[p1[0],p1[1]],[p2[0],p2[1]],[p3[0],p3[1]],[p4[0],p4[1]]],style);
 }
 
 function renderAffected(flowIds,m,d,sign){
  clearSimulationAffected();
+ var g=getSimulationGridOrigin(d);
+ if(!g)return;
  var cells=new Map(),a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];
  flowIds.forEach(function(id){
    var r=Math.floor(id/m.width),c=id-r*m.width;
    var x=x0+a*(c+.5),y=y0+e*(r+.5);
-   var cell=snapUtmPointToSimulationCell(x,y,d);
-   if(cell)cells.set(cell.key,cell);
+   var cell=snappedDisplayCell(x,y,g);
+   cells.set(cell.key,cell);
  });
  var parts=[];
  cells.forEach(function(cell){
-   var bb=displayCellLatLngBounds(cell);
-   parts.push(L.rectangle(bb,{color:'#222',weight:3,opacity:.85,fill:false,interactive:false}));
-   parts.push(L.rectangle(bb,{
+   parts.push(utmCellPolygon(cell,g.zone,{color:'#222',weight:3,opacity:.85,fill:false,interactive:false}));
+   parts.push(utmCellPolygon(cell,g.zone,{
      color:'#ff9d00',weight:1.5,opacity:1,dashArray:'5,3',
      fillColor:sign>0?'#32b450':sign<0?'#e6463c':'#e6be28',
      fillOpacity:.15,interactive:false
@@ -2135,6 +2160,8 @@ function fireStats(arr,m,ids,rule){var cc=[0,0,0,0,0,0],fc=[0,0,0,0,0,0],sum=0,s
 function riskColor(v){return ({1:'#3195e8',2:'#aeee97',3:'#ffffbf',4:'#f5ad58',5:'#d62125'})[v]||'#888'}
 function renderFirePixels(ids,arr,m,d,rule,after){
  clearSimulationAffected();
+ var g=getSimulationGridOrigin(d);
+ if(!g)return;
  var sourceZone=m.zone||simulationDistrictInfo[d].zone;
  var districtZone=simulationDistrictInfo[d].zone;
  var a=m.transform[0],e=m.transform[4],x0=m.transform[2],y0=m.transform[5];
@@ -2147,17 +2174,15 @@ function renderFirePixels(ids,arr,m,d,rule,after){
    if(v<1||v>5)return;
    var cls=after?Math.max(1,Math.min(5,v+rule)):v;
    var r=Math.floor(id/m.width),c=id-r*m.width;
-   var xs=x0+a*(c+.5),ys=y0+e*(r+.5);
+   var x=x0+a*(c+.5),y=y0+e*(r+.5);
 
-   var xd=xs,yd=ys;
    if(sourceZone!==districtZone){
-     var ll=utmToLatLon(xs,ys,sourceZone);
+     var ll=utmToLatLon(x,y,sourceZone);
      var u=latLonToUtm(ll[0],ll[1],districtZone);
-     xd=u[0];yd=u[1];
+     x=u[0];y=u[1];
    }
 
-   var cell=snapUtmPointToSimulationCell(xd,yd,d);
-   if(!cell)return;
+   var cell=snappedDisplayCell(x,y,g);
    var item=agg.get(cell.key);
    if(!item){item={cell:cell,counts:[0,0,0,0,0,0]};agg.set(cell.key,item);}
    item.counts[cls]++;
@@ -2169,7 +2194,7 @@ function renderFirePixels(ids,arr,m,d,rule,after){
    for(var k=1;k<=5;k++){
      if(item.counts[k]>bestN){bestN=item.counts[k];best=k;}
    }
-   parts.push(L.rectangle(displayCellLatLngBounds(item.cell),{
+   parts.push(utmCellPolygon(item.cell,g.zone,{
      color:'#333',weight:.65,fillColor:riskColor(best),fillOpacity:.72,interactive:false
    }));
  });
@@ -2436,7 +2461,7 @@ if ('serviceWorker' in navigator){
    window.addEventListener('load', function(){
 
       navigator.serviceWorker
-         .register('./service-worker.js?v=20260830_part4b', {updateViaCache:'none'})
+         .register('./service-worker.js?v=20260830_part4c', {updateViaCache:'none'})
 
          .then(function(registration){
 
