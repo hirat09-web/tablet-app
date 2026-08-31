@@ -1,4 +1,4 @@
-const CACHE_NAME='ceforaa-tablet-part4c-stable-v1';
+const CACHE_NAME='ceforaa-tablet-part4e-df-water-v1';
 const PRECACHE_URLS=[
   "./Huanipaca.geojson",
   "./Huanipaca_degradation.png",
@@ -1143,6 +1143,7 @@ const PRECACHE_URLS=[
   "./data/simulation/landcover_grid/Yanatile/2km2/99.json",
   "./data/simulation/landuse_lookup.json",
   "./data/simulation/rasters/Huanipaca/current.bin",
+  "./data/simulation/rasters/Huanipaca/df.bin",
   "./data/simulation/rasters/Huanipaca/fire_risk.bin",
   "./data/simulation/rasters/Huanipaca/flow_accumulation.bin",
   "./data/simulation/rasters/Huanipaca/flow_direction.bin",
@@ -1152,6 +1153,7 @@ const PRECACHE_URLS=[
   "./data/simulation/rasters/Huanipaca/pl.bin",
   "./data/simulation/rasters/Huanipaca/sf.bin",
   "./data/simulation/rasters/SJO/current.bin",
+  "./data/simulation/rasters/SJO/df.bin",
   "./data/simulation/rasters/SJO/fire_risk.bin",
   "./data/simulation/rasters/SJO/flow_accumulation.bin",
   "./data/simulation/rasters/SJO/flow_direction.bin",
@@ -1161,6 +1163,7 @@ const PRECACHE_URLS=[
   "./data/simulation/rasters/SJO/pl.bin",
   "./data/simulation/rasters/SJO/sf.bin",
   "./data/simulation/rasters/Yanatile/current.bin",
+  "./data/simulation/rasters/Yanatile/df.bin",
   "./data/simulation/rasters/Yanatile/fire_risk.bin",
   "./data/simulation/rasters/Yanatile/flow_accumulation.bin",
   "./data/simulation/rasters/Yanatile/flow_direction.bin",
@@ -1231,7 +1234,21 @@ self.addEventListener('install',event=>{
       }
     }
     // Always refresh the app shell.
-    for(const url of ['./index.html','./manifest.webmanifest','./leaflet.js','./leaflet.css']){
+    for(const url of [
+      './index.html',
+      './manifest.webmanifest',
+      './leaflet.js',
+      './leaflet.css',
+      './Huanipaca_landuse.png',
+      './Yanatile_landuse.png',
+      './SJO_landuse.png',
+      './data/simulation/rasters/Huanipaca/meta.json',
+      './data/simulation/rasters/Huanipaca/df.bin',
+      './data/simulation/rasters/Yanatile/meta.json',
+      './data/simulation/rasters/Yanatile/df.bin',
+      './data/simulation/rasters/SJO/meta.json',
+      './data/simulation/rasters/SJO/df.bin'
+    ]){
       try{await target.add(new Request(url,{cache:'reload'}));}catch(e){}
     }
     // On a fresh install, fill the full offline cache.

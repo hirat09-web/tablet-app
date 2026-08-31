@@ -692,13 +692,20 @@ Borrar Incendios
 <div id="simGridSummary" class="sim-summary">Seleccione una microcuenca para crear la cuadrícula.</div>
 <label>Cobertura actual del suelo</label><div id="simCurrentLC" class="sim-summary">Seleccione al menos una cuadrícula.</div>
 <label>Cambiar a</label>
-<select id="simChangeTo"><option value="1">Bosque primario</option><option value="2">Bosque en recuperación</option><option value="6">Plantación forestal</option><option value="8">Agroforestería y cultivos permanentes</option><option value="9">Cultivos temporales</option><option value="14">Pastos</option></select>
+<select id="simChangeTo">
+<option value="1">Bosque primario</option>
+<option value="2">Bosque en recuperación</option>
+<option value="6">Plantación forestal</option>
+<option value="8">Agroforestería y cultivos permanentes</option>
+<option value="9">Cultivos temporales</option>
+<option value="14">Pastos</option>
+</select>
 <div id="simStatus" class="sim-status"></div>
 <button class="sim-run" onclick="runTabletSimulation()">Ejecutar simulación</button>
 <button class="sim-clear" onclick="clearSimulationSelection()">Borrar selección</button>
 <div id="simResult" class="sim-result"></div>
-<div class="sim-note">Part 3-3: Recursos hídricos y Riesgo de incendio funcionan en los 3 distritos. Se añadió Relieve DEM como mapa base. La cobertura actual del suelo por cuadrícula está disponible en los 3 distritos.</div>
-<div class="sim-version">Tablet Part 4c / Stable grid + tab cleanup / 3 distritos / 2026-08-30</div>
+<div class="sim-note">Los bosques se muestran por clase original. «Bosque en recuperación» está disponible como uso futuro. Para Recursos hídricos requiere el escenario df de cada distrito.</div>
+<div class="sim-version">Tablet Part 4e / Forest recovery water scenario / 3 distritos / 2026-09-01</div>
 <div class="install-status" id="installStatus">
   Estado PWA: comprobando…
   <div class="install-actions">
@@ -712,7 +719,7 @@ Borrar Incendios
 
 <div id="map"></div>
 
-<script src="data/simulation/fire_risk_embedded.js?v=part4c"></script>
+<script src="data/simulation/fire_risk_embedded.js?v=part4e"></script>
 <script>
 
 // ================= Mapa =================
@@ -759,7 +766,7 @@ var simulationWatershedPaths={
  'SJO':{'2km2':'data/basin_SJO_2km2.geojson','10km2':'data/basin_SJO_10km2.geojson'}
 };
 var simulationDistrictInfo={'Huanipaca':{zone:18},'Yanatile':{zone:18},'SJO':{zone:19}};
-fetch('data/simulation/landuse_lookup.json?v=part4c',{cache:'no-store'}).then(r=>r.json()).then(d=>simulationLookup=d).catch(()=>simulationLookup={});
+fetch('data/simulation/landuse_lookup.json?v=part4e',{cache:'no-store'}).then(r=>r.json()).then(d=>simulationLookup=d).catch(()=>simulationLookup={});
 
 // ================= Mapa base =================
 
@@ -1663,17 +1670,21 @@ landuseLegend.onAdd=function(map){
 
    div.innerHTML=
    "<b>Uso de Suelo</b><br>"+
-
-   '<i style="background:#008f0c"></i>Bosque<br>'+
-   '<i style="background:#0093ff"></i>Plantaciones<br>'+
-   '<i style="background:#ff978f"></i>Matorral<br>'+
-   '<i style="background:#ffa300"></i>Agroforesteria<br>'+
+   '<i style="background:#005f08"></i>Bosque primario<br>'+
+   '<i style="background:#45aa00"></i>Bosque intervenido<br>'+
+   '<i style="background:#98ff6a"></i>Bosque secundario<br>'+
+   '<i style="background:#d4e545"></i>Matorral<br>'+
+   '<i style="background:#6be3da"></i>Plantación de eucaliptos<br>'+
+   '<i style="background:#1e8baa"></i>Plantación de pinos<br>'+
+   '<i style="background:#ffc85e"></i>Agroforestería<br>'+
    '<i style="background:#a68942"></i>Cultivos temporales<br>'+
-   '<i style="background:#f7ff56"></i>Pajonal<br>'+
-   '<i style="background:#a8ff56"></i>Pastos<br>'+
-   '<i style="background:#aaaaaa"></i>Rocas<br>'+
-   '<i style="background:#0012ff"></i>Cuerpos de agua<br>'+
-   '<i style="background:#c879ed"></i>Zona urbana<br>';
+   '<i style="background:#91522d"></i>Cultivos permanentes<br>'+
+   '<i style="background:#ffa1f2"></i>Pajonal<br>'+
+   '<i style="background:#fdff21"></i>Pastos naturales y cultivados<br>'+
+   '<i style="background:#6fbb7b"></i>Bofedal<br>'+
+   '<i style="background:#c8c8c8"></i>Rocas<br>'+
+   '<i style="background:#4653ff"></i>Cuerpos de agua<br>'+
+   '<i style="background:#fffcc8"></i>Zona urbana<br>';
 
    return div;
 
@@ -1976,7 +1987,7 @@ function loadSimulationWatersheds(unit){
  document.getElementById('simGridSummary').textContent='Seleccione una microcuenca para crear la cuadrícula.';
  document.getElementById('simCurrentLC').textContent='Seleccione al menos una cuadrícula.';
  document.getElementById('simStatus').textContent='';
- fetch(simulationWatershedPaths[d][unit]+'?v=part4c',{cache:'no-store'})
+ fetch(simulationWatershedPaths[d][unit]+'?v=part4e',{cache:'no-store'})
  .then(r=>{if(!r.ok)throw Error('No se pudo cargar la microcuenca');return r.json()})
  .then(data=>{
    if(currentAppMode!=='simulation'||requestId!==simulationLoadGeneration||d!==simDistrict())return;
@@ -1991,7 +2002,7 @@ function loadSimulationWatersheds(unit){
      document.getElementById('simGridSummary').textContent=e.message;
  });
 }
-async function getUtmWatersheds(d,unit){var key=d+'_'+unit;if(simulationUtmCache[key])return simulationUtmCache[key];var p='data/simulation/watershed_utm/'+key+'.json?v=part4c';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la geometría UTM');var j=await r.json();simulationUtmCache[key]=j;return j;}
+async function getUtmWatersheds(d,unit){var key=d+'_'+unit;if(simulationUtmCache[key])return simulationUtmCache[key];var p='data/simulation/watershed_utm/'+key+'.json?v=part4e';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la geometría UTM');var j=await r.json();simulationUtmCache[key]=j;return j;}
 async function selectSimulationWatershed(f,l,unit){
  var requestId=simulationLoadGeneration;
  if(currentAppMode!=='simulation')return;
@@ -2015,7 +2026,7 @@ async function buildDynamicGrid(d,unit,simid){var u=await getUtmWatersheds(d,uni
 function featureUtmBounds(f,d){var p=f.properties;if(Number.isFinite(Number(p.XMIN)))return [Number(p.XMIN),Number(p.YMIN),Number(p.XMAX),Number(p.YMAX)];var zone=simulationDistrictInfo[d].zone,coords=f.geometry.coordinates[0],xs=[],ys=[];coords.forEach(c=>{var u=latLonToUtm(c[1],c[0],zone);xs.push(u[0]);ys.push(u[1])});return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]}
 async function loadSimulationGrid(unit,simid,dn,requestId){
  if(simulationGridLayer)map.removeLayer(simulationGridLayer);clearSimulationAffected();selectedSimulationCells.clear();var d=simDistrict();document.getElementById('simGridSummary').textContent='Creando / cargando cuadrícula de 100 m…';
- try{var data;if(d==='Huanipaca'){var p='data/simulation/Huanipaca/'+unit+'/'+dn+'.geojson?v=part4ca';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la cuadrícula');data=await r.json();}else{data=await buildDynamicGrid(d,unit,simid);var lcr=await fetch('data/simulation/landcover_grid/'+d+'/'+unit+'/'+simid+'.json?v=part4ca',{cache:'no-store'});if(!lcr.ok)throw Error('No se pudo cargar la cobertura terrestre de la cuadrícula');var lcmap=await lcr.json();data.features.forEach(function(f){f.properties.LC=lcmap[String(f.properties.Cell_ID)]||'';});}
+ try{var data;if(d==='Huanipaca'){var p='data/simulation/Huanipaca/'+unit+'/'+dn+'.geojson?v=part4ea';var r=await fetch(p,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la cuadrícula');data=await r.json();}else{data=await buildDynamicGrid(d,unit,simid);var lcr=await fetch('data/simulation/landcover_grid/'+d+'/'+unit+'/'+simid+'.json?v=part4ea',{cache:'no-store'});if(!lcr.ok)throw Error('No se pudo cargar la cobertura terrestre de la cuadrícula');var lcmap=await lcr.json();data.features.forEach(function(f){f.properties.LC=lcmap[String(f.properties.Cell_ID)]||'';});}
  if(currentAppMode!=='simulation'||requestId!==simulationLoadGeneration)return;
  simulationGridLayer=L.geoJSON(data,{style:simGridStyle,onEachFeature:(f,l)=>l.on('click',e=>{L.DomEvent.stopPropagation(e);toggleSimulationCell(f,l)})}).addTo(map);if(simulationGridLayer.getBounds().isValid())map.fitBounds(simulationGridLayer.getBounds(),{padding:[20,20]});updateSimulationSummary(data.features.length)}catch(e){document.getElementById('simGridSummary').textContent=e.message}
 }
@@ -2025,7 +2036,7 @@ function updateSimulationCurrentLC(){let b=document.getElementById('simCurrentLC
 function clearSimulationSelection(){clearSimulationAffected();selectedSimulationCells.clear();if(simulationGridLayer)simulationGridLayer.eachLayer(l=>l.setStyle(simGridStyle(l.feature)));updateSimulationSummary();updateSimulationCurrentLC();document.getElementById('simStatus').textContent=''}
 
 function typedArrayFromBuffer(buf,dtype){if(dtype==='float32')return new Float32Array(buf);if(dtype==='float64')return new Float64Array(buf);if(dtype==='int16')return new Int16Array(buf);if(dtype==='uint8')return new Uint8Array(buf);throw Error('Tipo de raster no soportado')}
-async function loadRasterMeta(d){var k=d+'_meta';if(simulationRasterCache[k])return simulationRasterCache[k];var r=await fetch('data/simulation/rasters/'+d+'/meta.json?v=part4c',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar metadatos raster');var j=await r.json();simulationRasterCache[k]=j;return j}
+async function loadRasterMeta(d){var k=d+'_meta';if(simulationRasterCache[k])return simulationRasterCache[k];var r=await fetch('data/simulation/rasters/'+d+'/meta.json?v=part4e',{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar metadatos raster');var j=await r.json();simulationRasterCache[k]=j;return j}
 function decodeEmbeddedUint8(base64Text){
  var binary=atob(base64Text),n=binary.length,a=new Uint8Array(n);
  for(var i=0;i<n;i++)a[i]=binary.charCodeAt(i);
@@ -2050,7 +2061,7 @@ async function loadRasterArray(d,name,meta){
    return fireArray;
  }
 
- var r=await fetch(m.path+'?v=part4c',{cache:'no-store'});
+ var r=await fetch(m.path+'?v=part4e',{cache:'no-store'});
  if(!r.ok)throw Error('No se pudo cargar '+name+' (HTTP '+r.status+')');
  var buffer=await r.arrayBuffer();
  var a=typedArrayFromBuffer(buffer,m.dtype);
@@ -2150,7 +2161,7 @@ function renderAffected(flowIds,m,d,sign){
  simulationAffectedLayer=L.layerGroup(parts).addTo(map);
 }
 function fmt(v,n){return Number(v).toLocaleString('es-PE',{minimumFractionDigits:n,maximumFractionDigits:n})}
-async function runWaterSimulation(){if(!selectedSimulationWatershed){alert('Seleccione primero una microcuenca.');return}if(!selectedSimulationCells.size){alert('Seleccione al menos una cuadrícula de 100 m.');return}clearSimulationAffected();var st=document.getElementById('simStatus');st.textContent='Calculando recursos hídricos…';try{var d=simDistrict(),code=parseInt(document.getElementById('simChangeTo').value,10),suffix=({1:'nf',2:'df',6:'pl',8:'sf',9:'ot',14:'ot'})[code];if(!suffix)throw Error('Uso futuro no compatible');var meta=await loadRasterMeta(d);var curM=meta.rasters.current,futM=meta.rasters[suffix],flowM=meta.rasters.flow_direction,accM=meta.rasters.flow_accumulation;var arrays=await Promise.all([loadRasterArray(d,'current',meta),loadRasterArray(d,suffix,meta),loadRasterArray(d,'flow_direction',meta),loadRasterArray(d,'flow_accumulation',meta)]),cur=arrays[0],fut=arrays[1],dir=arrays[2],acc=arrays[3];var curIds=selectedPixelIds(curM,d),futIds=selectedPixelIds(futM,d),cs=rasterStatsFromIds(cur,curM,curIds),fs=rasterStatsFromIds(fut,futM,futIds),diff=fs.volume_m3_month-cs.volume_m3_month,pct=cs.volume_m3_month!==0?diff/cs.volume_m3_month*100:null;st.textContent='Trazando el área potencialmente afectada…';var starts=startingFlowCells(meta,d),core=traceShared(starts,dir,flowM),affected=createValley(core,starts,acc,flowM,accM);if(!affected.size)throw Error('No se pudo obtener el área afectada');var affectedWaterIds=waterIdsForAffected(affected,flowM,curM),as=rasterStatsFromIds(cur,curM,affectedWaterIds),affectedArea=affected.size*flowM.pixelAreaM2/10000,impact=as.volume_m3_month!==0?diff/as.volume_m3_month*100:null;renderAffected(affected,flowM,d,diff);var changeName=document.getElementById('simChangeTo').selectedOptions[0].textContent,desc=diff>0?'Aumento':diff<0?'Disminución':'Sin cambio',color=diff>0?'#1b7f3a':diff<0?'#b42318':'#8a6d00',area=selectedSimulationCells.size;var box=document.getElementById('simResult');box.innerHTML='<b>Resultado de la simulación de recursos hídricos</b><table><tr><td>Cambio de uso propuesto:</td><td>'+changeName+'</td></tr><tr><td>Área modificada:</td><td>'+fmt(area,2)+' ha</td></tr><tr><td>Disponibilidad hídrica antes:</td><td>'+fmt(cs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Disponibilidad hídrica después:</td><td>'+fmt(fs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>'+desc+':</td><td style="color:'+color+'">'+(diff>=0?'+':'')+fmt(diff,2)+' m³/mes</td></tr><tr><td>Cambio en el área modificada:</td><td>'+(pct===null?'No calculable':(pct>=0?'+':'')+fmt(pct,2)+' %')+'</td></tr><tr><td colspan="2"><hr></td></tr><tr><td>Área potencialmente afectada:</td><td>'+fmt(affectedArea,2)+' ha</td></tr><tr><td>Disponibilidad hídrica actual en el área afectada:</td><td>'+fmt(as.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Impacto relativo sobre el área afectada:</td><td>'+(impact===null?'No calculable':(impact>=0?'+':'')+fmt(impact,2)+' %')+'</td></tr></table><div style="margin-top:6px;font-style:italic">El impacto relativo compara el cambio estimado en el área modificada con el volumen actual de disponibilidad hídrica del área potencialmente afectada.</div>';box.classList.add('open');st.textContent='Simulación completada.';}catch(e){console.error(e);st.textContent='Error: '+e.message;}}
+async function runWaterSimulation(){if(!selectedSimulationWatershed){alert('Seleccione primero una microcuenca.');return}if(!selectedSimulationCells.size){alert('Seleccione al menos una cuadrícula de 100 m.');return}clearSimulationAffected();var st=document.getElementById('simStatus');st.textContent='Calculando recursos hídricos…';try{var d=simDistrict(),code=parseInt(document.getElementById('simChangeTo').value,10),suffix=({1:'nf',2:'df',6:'pl',8:'sf',9:'ot',14:'ot'})[code];if(!suffix)throw Error('Uso futuro no compatible');var meta=await loadRasterMeta(d);if(code===2&&!meta.rasters.df)throw Error('Falta el raster de Bosque en recuperación (df) para '+d+'. Debe añadirse df.bin y la entrada df en meta.json.');var curM=meta.rasters.current,futM=meta.rasters[suffix],flowM=meta.rasters.flow_direction,accM=meta.rasters.flow_accumulation;var arrays=await Promise.all([loadRasterArray(d,'current',meta),loadRasterArray(d,suffix,meta),loadRasterArray(d,'flow_direction',meta),loadRasterArray(d,'flow_accumulation',meta)]),cur=arrays[0],fut=arrays[1],dir=arrays[2],acc=arrays[3];var curIds=selectedPixelIds(curM,d),futIds=selectedPixelIds(futM,d),cs=rasterStatsFromIds(cur,curM,curIds),fs=rasterStatsFromIds(fut,futM,futIds),diff=fs.volume_m3_month-cs.volume_m3_month,pct=cs.volume_m3_month!==0?diff/cs.volume_m3_month*100:null;st.textContent='Trazando el área potencialmente afectada…';var starts=startingFlowCells(meta,d),core=traceShared(starts,dir,flowM),affected=createValley(core,starts,acc,flowM,accM);if(!affected.size)throw Error('No se pudo obtener el área afectada');var affectedWaterIds=waterIdsForAffected(affected,flowM,curM),as=rasterStatsFromIds(cur,curM,affectedWaterIds),affectedArea=affected.size*flowM.pixelAreaM2/10000,impact=as.volume_m3_month!==0?diff/as.volume_m3_month*100:null;renderAffected(affected,flowM,d,diff);var changeName=document.getElementById('simChangeTo').selectedOptions[0].textContent,desc=diff>0?'Aumento':diff<0?'Disminución':'Sin cambio',color=diff>0?'#1b7f3a':diff<0?'#b42318':'#8a6d00',area=selectedSimulationCells.size;var box=document.getElementById('simResult');box.innerHTML='<b>Resultado de la simulación de recursos hídricos</b><table><tr><td>Cambio de uso propuesto:</td><td>'+changeName+'</td></tr><tr><td>Área modificada:</td><td>'+fmt(area,2)+' ha</td></tr><tr><td>Disponibilidad hídrica antes:</td><td>'+fmt(cs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Disponibilidad hídrica después:</td><td>'+fmt(fs.volume_m3_month,2)+' m³/mes</td></tr><tr><td>'+desc+':</td><td style="color:'+color+'">'+(diff>=0?'+':'')+fmt(diff,2)+' m³/mes</td></tr><tr><td>Cambio en el área modificada:</td><td>'+(pct===null?'No calculable':(pct>=0?'+':'')+fmt(pct,2)+' %')+'</td></tr><tr><td colspan="2"><hr></td></tr><tr><td>Área potencialmente afectada:</td><td>'+fmt(affectedArea,2)+' ha</td></tr><tr><td>Disponibilidad hídrica actual en el área afectada:</td><td>'+fmt(as.volume_m3_month,2)+' m³/mes</td></tr><tr><td>Impacto relativo sobre el área afectada:</td><td>'+(impact===null?'No calculable':(impact>=0?'+':'')+fmt(impact,2)+' %')+'</td></tr></table><div style="margin-top:6px;font-style:italic">El impacto relativo compara el cambio estimado en el área modificada con el volumen actual de disponibilidad hídrica del área potencialmente afectada.</div>';box.classList.add('open');st.textContent='Simulación completada.';}catch(e){console.error(e);st.textContent='Error: '+e.message;}}
 
 function upstreamNeighborIds(targetId,dir,m){var tr=Math.floor(targetId/m.width),tc=targetId-tr*m.width,out=[];for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++){if(dr===0&&dc===0)continue;var nr=tr+dr,nc=tc+dc;if(!validCell(nr,nc,m))continue;var nid=nr*m.width+nc,v=dir[nid];if(m.nodata!==null&&v===m.nodata)continue;var off=flowOffset(v);if(!off)continue;if(nr+off[0]===tr&&nc+off[1]===tc)out.push(nid)}return out}
 function traceUpstream(startIds,dir,m,steps){var active=new Set(startIds),up=new Set(startIds),visited=new Set(startIds);for(var step=0;step<steps;step++){var next=new Set();active.forEach(id=>upstreamNeighborIds(id,dir,m).forEach(nid=>{if(!visited.has(nid)){visited.add(nid);next.add(nid)}}));if(!next.size)break;next.forEach(id=>up.add(id));active=next}return up}
@@ -2461,7 +2472,7 @@ if ('serviceWorker' in navigator){
    window.addEventListener('load', function(){
 
       navigator.serviceWorker
-         .register('./service-worker.js?v=20260830_part4c', {updateViaCache:'none'})
+         .register('./service-worker.js?v=20260901_part4e', {updateViaCache:'none'})
 
          .then(function(registration){
 
