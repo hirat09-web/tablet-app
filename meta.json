@@ -1,0 +1,155 @@
+{
+  "zone": 18,
+  "south": true,
+  "epsg": 32718,
+  "rasters": {
+    "current": {
+      "path": "data/simulation/rasters/Huanipaca/current.bin",
+      "width": 1160,
+      "height": 704,
+      "dtype": "float32",
+      "nodata": -3.4028234663852886e+38,
+      "transform": [
+        30.0,
+        0.0,
+        699180.0,
+        0.0,
+        -30.0,
+        8519580.0
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "nf": {
+      "path": "data/simulation/rasters/Huanipaca/nf.bin",
+      "width": 1160,
+      "height": 704,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        699180.0,
+        0.0,
+        -30.0,
+        8519580.0
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "sf": {
+      "path": "data/simulation/rasters/Huanipaca/sf.bin",
+      "width": 1160,
+      "height": 704,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        699180.0,
+        0.0,
+        -30.0,
+        8519580.0
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "pl": {
+      "path": "data/simulation/rasters/Huanipaca/pl.bin",
+      "width": 1160,
+      "height": 704,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        699180.0,
+        0.0,
+        -30.0,
+        8519580.0
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "ot": {
+      "path": "data/simulation/rasters/Huanipaca/ot.bin",
+      "width": 1160,
+      "height": 704,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        699180.0,
+        0.0,
+        -30.0,
+        8519580.0
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "flow_direction": {
+      "path": "data/simulation/rasters/Huanipaca/flow_direction.bin",
+      "width": 1158,
+      "height": 703,
+      "dtype": "int16",
+      "nodata": -32768.0,
+      "transform": [
+        30.0,
+        0.0,
+        699186.34041401,
+        0.0,
+        -30.0,
+        8519562.57899704
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "flow_accumulation": {
+      "path": "data/simulation/rasters/Huanipaca/flow_accumulation.bin",
+      "width": 1158,
+      "height": 703,
+      "dtype": "float64",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        699186.3404,
+        0.0,
+        -30.0,
+        8519562.579
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "fire_risk": {
+      "path": "data/simulation/rasters/Huanipaca/fire_risk.bin",
+      "width": 353,
+      "height": 215,
+      "dtype": "uint8",
+      "nodata": 255.0,
+      "transform": [
+        98.3221069427719,
+        0.0,
+        699226.5953020473,
+        0.0,
+        -98.32210694276836,
+        8519569.70482028
+      ],
+      "pixelAreaM2": 9667.236713665525,
+      "zone": 18,
+      "south": true,
+      "epsg": 32718
+    },
+    "df": {
+      "path": "data/simulation/rasters/Huanipaca/df.bin",
+      "width": 1160,
+      "height": 704,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        699180.0,
+        0.0,
+        -30.0,
+        8519580.0
+      ],
+      "pixelAreaM2": 900.0
+    }
+  },
+  "directionScheme": "grass"
+}

@@ -1,0 +1,155 @@
+{
+  "zone": 18,
+  "south": true,
+  "epsg": 32718,
+  "rasters": {
+    "current": {
+      "path": "data/simulation/rasters/Yanatile/current.bin",
+      "width": 1965,
+      "height": 1906,
+      "dtype": "float32",
+      "nodata": -3.4028234663852886e+38,
+      "transform": [
+        30.0,
+        0.0,
+        785723.14804,
+        0.0,
+        -30.0,
+        8615646.91046
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "nf": {
+      "path": "data/simulation/rasters/Yanatile/nf.bin",
+      "width": 1965,
+      "height": 1906,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        785723.148037958,
+        0.0,
+        -30.0,
+        8615646.910462718
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "sf": {
+      "path": "data/simulation/rasters/Yanatile/sf.bin",
+      "width": 1965,
+      "height": 1906,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        785723.148037958,
+        0.0,
+        -30.0,
+        8615646.910462718
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "pl": {
+      "path": "data/simulation/rasters/Yanatile/pl.bin",
+      "width": 1965,
+      "height": 1906,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        785723.148037958,
+        0.0,
+        -30.0,
+        8615646.910462718
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "ot": {
+      "path": "data/simulation/rasters/Yanatile/ot.bin",
+      "width": 1965,
+      "height": 1906,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        785723.148037958,
+        0.0,
+        -30.0,
+        8615646.910462718
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "flow_direction": {
+      "path": "data/simulation/rasters/Yanatile/flow_direction.bin",
+      "width": 1964,
+      "height": 1905,
+      "dtype": "int16",
+      "nodata": -32768.0,
+      "transform": [
+        30.0,
+        0.0,
+        785728.80825888,
+        0.0,
+        -30.0,
+        8615638.4541054
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "flow_accumulation": {
+      "path": "data/simulation/rasters/Yanatile/flow_accumulation.bin",
+      "width": 1964,
+      "height": 1905,
+      "dtype": "float64",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        785728.8083,
+        0.0,
+        -30.0,
+        8615638.4541
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "fire_risk": {
+      "path": "data/simulation/rasters/Yanatile/fire_risk.bin",
+      "width": 598,
+      "height": 580,
+      "dtype": "uint8",
+      "nodata": 255.0,
+      "transform": [
+        98.4996206208008,
+        0.0,
+        785747.4856097441,
+        0.0,
+        -98.49962062080358,
+        8615637.447513763
+      ],
+      "pixelAreaM2": 9702.17526244196,
+      "zone": 18,
+      "south": true,
+      "epsg": 32718
+    },
+    "df": {
+      "path": "data/simulation/rasters/Yanatile/df.bin",
+      "width": 1965,
+      "height": 1906,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        785723.148037958,
+        0.0,
+        -30.0,
+        8615646.910462718
+      ],
+      "pixelAreaM2": 900.0
+    }
+  },
+  "directionScheme": "grass"
+}

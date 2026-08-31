@@ -1,0 +1,155 @@
+{
+  "zone": 19,
+  "south": true,
+  "epsg": 32719,
+  "rasters": {
+    "current": {
+      "path": "data/simulation/rasters/SJO/current.bin",
+      "width": 893,
+      "height": 461,
+      "dtype": "float32",
+      "nodata": -3.4028234663852886e+38,
+      "transform": [
+        30.0,
+        0.0,
+        476564.4039,
+        0.0,
+        -30.0,
+        8436987.5089
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "nf": {
+      "path": "data/simulation/rasters/SJO/nf.bin",
+      "width": 893,
+      "height": 461,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        476564.4038768455,
+        0.0,
+        -30.0,
+        8436987.508921502
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "sf": {
+      "path": "data/simulation/rasters/SJO/sf.bin",
+      "width": 893,
+      "height": 461,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        476564.4038768455,
+        0.0,
+        -30.0,
+        8436987.508921502
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "pl": {
+      "path": "data/simulation/rasters/SJO/pl.bin",
+      "width": 893,
+      "height": 461,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        476564.4038768455,
+        0.0,
+        -30.0,
+        8436987.508921502
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "ot": {
+      "path": "data/simulation/rasters/SJO/ot.bin",
+      "width": 893,
+      "height": 461,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        476564.4038768455,
+        0.0,
+        -30.0,
+        8436987.508921502
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "flow_direction": {
+      "path": "data/simulation/rasters/SJO/flow_direction.bin",
+      "width": 894,
+      "height": 462,
+      "dtype": "int16",
+      "nodata": -32768.0,
+      "transform": [
+        30.0,
+        0.0,
+        476551.5915,
+        0.0,
+        -30.0,
+        8437004.2103
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "flow_accumulation": {
+      "path": "data/simulation/rasters/SJO/flow_accumulation.bin",
+      "width": 894,
+      "height": 462,
+      "dtype": "float64",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        476551.5915,
+        0.0,
+        -30.0,
+        8437004.2103
+      ],
+      "pixelAreaM2": 900.0
+    },
+    "fire_risk": {
+      "path": "data/simulation/rasters/SJO/fire_risk.bin",
+      "width": 271,
+      "height": 142,
+      "dtype": "uint8",
+      "nodata": 255.0,
+      "transform": [
+        99.18323541452551,
+        0.0,
+        1124881.0854997416,
+        0.0,
+        -99.18323541452295,
+        8429211.778100291
+      ],
+      "pixelAreaM2": 9837.314187292934,
+      "zone": 18,
+      "south": true,
+      "epsg": 32718
+    },
+    "df": {
+      "path": "data/simulation/rasters/SJO/df.bin",
+      "width": 893,
+      "height": 461,
+      "dtype": "float32",
+      "nodata": null,
+      "transform": [
+        30.0,
+        0.0,
+        476564.4038768455,
+        0.0,
+        -30.0,
+        8436987.508921502
+      ],
+      "pixelAreaM2": 900.0
+    }
+  },
+  "directionScheme": "grass"
+}
